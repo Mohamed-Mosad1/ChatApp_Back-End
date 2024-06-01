@@ -1,18 +1,17 @@
 ﻿using ChatApp.Application.MappingProfiles;
 using Microsoft.Extensions.DependencyInjection;
-using System.Reflection;
 
 namespace ChatApp.Application
 {
-    public static class DependancyInjection
+    public static class DependencyInjection
     {
         public static IServiceCollection ConfigureApplicationServices(this IServiceCollection services)
         {
             // Configure AutoMapper
-            services.AddAutoMapper(typeof(MappingProfile));
+            services.AddAutoMapper(typeof(MappingProfile).Assembly);
 
             // Configure MediatR
-            services.AddMediatR(cfg => cfg.RegisterServicesFromAssembly(Assembly.GetExecutingAssembly()));
+            services.AddMediatR(cfg => cfg.RegisterServicesFromAssembly(typeof(DependencyInjection).Assembly));
 
 
 

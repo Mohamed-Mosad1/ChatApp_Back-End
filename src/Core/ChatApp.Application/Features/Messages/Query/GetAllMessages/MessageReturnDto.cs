@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace ChatApp.Application.Features.Messages.Query.GetAllMessages
 {
-    internal class MessageReturnDto
+    public class MessageReturnDto
     {
         public string Content { get; set; } = string.Empty;
         public DateTime? DateRead { get; set; }

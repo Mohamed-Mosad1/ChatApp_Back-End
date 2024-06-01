@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace ChatApp.Application.Persistence.Contracts
 {
-    internal interface IMessageRepository : IGenericRepository<Message>
+    public interface IMessageRepository : IGenericRepository<Message>
     {
     }
 }
