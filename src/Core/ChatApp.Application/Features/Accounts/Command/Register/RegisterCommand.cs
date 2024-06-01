@@ -1,4 +1,5 @@
-﻿using ChatApp.Application.Responses;
+﻿using ChatApp.Application.Persistence.Contracts;
+using ChatApp.Application.Responses;
 using ChatApp.Domain.Entities.Identity;
 using MediatR;
 using Microsoft.AspNetCore.Identity;
@@ -17,13 +18,15 @@ namespace ChatApp.Application.Features.Accounts.Command.Register
         class Handler : IRequestHandler<RegisterCommand, BaseCommonResponse>
         {
             private readonly UserManager<AppUser> _userManager;
+            private readonly ITokenService _tokenService;
 
             public Handler(
                 UserManager<AppUser> userManager,
-                RoleManager<IdentityRole> roleManager
+                ITokenService tokenService
                 )
             {
                 _userManager = userManager;
+                _tokenService = tokenService;
             }
 
             public async Task<BaseCommonResponse> Handle(RegisterCommand request, CancellationToken cancellationToken)
@@ -55,7 +58,7 @@ namespace ChatApp.Application.Features.Accounts.Command.Register
                     {
                         userName = user.UserName,
                         email = user.Email,
-                        token = ""
+                        token = await _tokenService.CreateTokenAsync(user)
                     };
 
                     return res;

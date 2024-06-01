@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using ChatApp.Application.Persistence.Contracts;
 using ChatApp.Application.Responses;
 using ChatApp.Domain.Entities.Identity;
 using MediatR;
@@ -25,17 +26,20 @@ namespace ChatApp.Application.Features.Accounts.Command.Login
             private readonly UserManager<AppUser> _userManager;
             private readonly RoleManager<IdentityRole> _roleManager;
             private readonly SignInManager<AppUser> _signInManager;
+            private readonly ITokenService _tokenService;
             private readonly IMapper _mapper;
 
             public Handler(
                 UserManager<AppUser> userManager,
                 RoleManager<IdentityRole> roleManager,
                 SignInManager<AppUser> signInManager,
+                ITokenService tokenService,
                 IMapper mapper)
             {
                 _userManager = userManager;
                 _roleManager = roleManager;
                 _signInManager = signInManager;
+                _tokenService = tokenService;
                 _mapper = mapper;
             }
 
@@ -57,7 +61,7 @@ namespace ChatApp.Application.Features.Accounts.Command.Login
                             {
                                 userName = user.UserName,
                                 email = user.Email,
-                                token = ""
+                                token = await _tokenService.CreateTokenAsync(user)
                             };
 
                             return res;
