@@ -1,6 +1,7 @@
 ﻿using ChatApp.Application.Features.Messages.Command.AddMessage;
 using ChatApp.Application.Features.Messages.Query.GetAllMessages;
 using MediatR;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace ChatApp.API.Controllers
@@ -14,6 +15,7 @@ namespace ChatApp.API.Controllers
             _mediator = mediator;
         }
 
+        [Authorize]
         [HttpGet]
         public async Task<ActionResult<MessageReturnDto>> GetAllMessages(CancellationToken cancellationToken)
         {

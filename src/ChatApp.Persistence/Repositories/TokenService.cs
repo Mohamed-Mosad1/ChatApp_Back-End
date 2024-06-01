@@ -24,7 +24,7 @@ namespace ChatApp.Persistence.Repositories
             var claim = new List<Claim>()
             {
                 new Claim(JwtRegisteredClaimNames.Email, user.Email),
-                new Claim(JwtRegisteredClaimNames.Name, user.UserName),
+                new Claim(JwtRegisteredClaimNames.GivenName, user.UserName),
             };
 
             var credentials = new SigningCredentials(_symmetricSecurityKey, SecurityAlgorithms.HmacSha256Signature);
