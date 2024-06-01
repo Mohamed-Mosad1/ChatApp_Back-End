@@ -1,11 +1,13 @@
 ﻿using ChatApp.Core.Common;
 using ChatApp.Core.Entities;
+using ChatApp.Domain.Entities;
+using ChatApp.Domain.Entities.Identity;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
-using System.Reflection;
 
 namespace ChatApp.Persistence.DatabaseContext
 {
-    public class ApplicationDbContext : DbContext
+    public class ApplicationDbContext : IdentityDbContext<AppUser>
     {
         public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : base(options)
         {
@@ -13,6 +15,7 @@ namespace ChatApp.Persistence.DatabaseContext
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
+            base.OnModelCreating(modelBuilder);
             modelBuilder.ApplyConfigurationsFromAssembly(typeof(ApplicationDbContext).Assembly);
         }
 
@@ -28,5 +31,6 @@ namespace ChatApp.Persistence.DatabaseContext
         }
 
         public DbSet<Message> Messages { get; set; }
+        public DbSet<Photo> Photos { get; set; }
     }
 }

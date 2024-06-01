@@ -7,7 +7,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace ChatApp.Persistence.Configurations.Entities
+namespace ChatApp.Persistence.Configurations.DataSeed
 {
     public class MessageSeed : IEntityTypeConfiguration<Message>
     {

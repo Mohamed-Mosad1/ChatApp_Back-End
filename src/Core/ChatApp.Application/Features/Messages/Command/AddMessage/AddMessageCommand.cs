@@ -2,6 +2,7 @@
 using ChatApp.Application.Features.Messages.Validator;
 using ChatApp.Application.Persistence.Contracts;
 using ChatApp.Application.Responses;
+using ChatApp.Core.Entities;
 using MediatR;
 
 namespace ChatApp.Application.Features.Messages.Command.AddMessage
@@ -41,7 +42,7 @@ namespace ChatApp.Application.Features.Messages.Command.AddMessage
                         response.Errors = validatorResult.Errors.Select(x => x.ErrorMessage).ToList();
                     }
 
-                    var mappedMessage = _mapper.Map<Core.Entities.Message>(request.AddMessageDto);
+                    var mappedMessage = _mapper.Map<Message>(request.AddMessageDto);
                     response.IsSuccess = true;
                     response.Message = "Success Adding New Message";
                     await _messageRepository.AddAsync(mappedMessage);

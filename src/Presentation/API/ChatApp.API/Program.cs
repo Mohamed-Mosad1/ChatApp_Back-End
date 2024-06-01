@@ -31,6 +31,8 @@ namespace ChatApp.API
 
             var app = builder.Build();
 
+            app.ConfigureMiddleware();
+
             // Configure the HTTP request pipeline.
             if (app.Environment.IsDevelopment())
             {
@@ -40,6 +42,7 @@ namespace ChatApp.API
 
             app.UseHttpsRedirection();
 
+            app.UseAuthentication();
             app.UseAuthorization();
 
             app.UseCors("CorsPolicy");
