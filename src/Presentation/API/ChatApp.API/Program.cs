@@ -1,6 +1,9 @@
 using ChatApp.Application;
+using ChatApp.Domain.Entities.Identity;
 using ChatApp.Persistence;
-using FluentValidation;
+using ChatApp.Persistence.DatabaseContext;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Models;
 using System.Reflection;
 
@@ -8,13 +11,14 @@ namespace ChatApp.API
 {
     public class Program
     {
-        public static void Main(string[] args)
+        public async static Task Main(string[] args)
         {
             var builder = WebApplication.CreateBuilder(args);
 
             // Add services to the container.
 
             builder.Services.AddControllers();
+
             // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen(s =>
@@ -51,13 +55,37 @@ namespace ChatApp.API
             {
                 opt.AddPolicy("CorsPolicy", policy =>
                 {
-                    policy.AllowAnyHeader().AllowAnyMethod().WithOrigins("http://localhost:4200");
+                    policy.WithOrigins("http://localhost:4200")
+                          .AllowAnyHeader().AllowAnyMethod();
                 });
             });
 
             var app = builder.Build();
 
-            app.ConfigureMiddleware();
+            #region Apple All Pending Migrations and Data Seeding
+
+            using (var scope = app.Services.CreateScope())
+            {
+                var services = scope.ServiceProvider;
+
+                var _dbContext = services.GetRequiredService<ApplicationDbContext>();
+                var _userManager = services.GetRequiredService<UserManager<AppUser>>();
+
+                var loggerFactory = services.GetRequiredService<ILoggerFactory>();
+                var logger = loggerFactory.CreateLogger<Program>();
+
+                try
+                {
+                    await _dbContext.Database.MigrateAsync(); // Update StoreContext Database
+                }
+                catch (Exception ex)
+                {
+                    logger.LogError(ex, "An error occurred while updating the database.");
+                }
+
+            }
+
+            #endregion
 
             // Configure the HTTP request pipeline.
             if (app.Environment.IsDevelopment())
@@ -68,12 +96,14 @@ namespace ChatApp.API
 
             app.UseHttpsRedirection();
 
+            app.UseCors("CorsPolicy");
+
             app.UseAuthentication();
             app.UseAuthorization();
 
-            app.UseCors("CorsPolicy");
-
             app.MapControllers();
+
+            app.ConfigureMiddleware();
 
             app.Run();
         }

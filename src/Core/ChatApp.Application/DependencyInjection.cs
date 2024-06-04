@@ -1,4 +1,5 @@
 ﻿using ChatApp.Application.MappingProfiles;
+using MediatR;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace ChatApp.Application
@@ -8,10 +9,10 @@ namespace ChatApp.Application
         public static IServiceCollection ConfigureApplicationServices(this IServiceCollection services)
         {
             // Configure AutoMapper
-            services.AddAutoMapper(typeof(MappingProfile).Assembly);
+            services.AddAutoMapper(typeof(MappingProfile));
 
             // Configure MediatR
-            services.AddMediatR(cfg => cfg.RegisterServicesFromAssembly(typeof(DependencyInjection).Assembly));
+            services.AddMediatR(AppDomain.CurrentDomain.GetAssemblies());
 
 
 

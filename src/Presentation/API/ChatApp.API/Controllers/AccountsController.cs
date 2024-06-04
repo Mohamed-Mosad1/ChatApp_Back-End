@@ -1,7 +1,10 @@
-﻿using ChatApp.Application.Features.Accounts.Command.GetCurrentUser;
-using ChatApp.Application.Features.Accounts.Command.GetCurrentUser.CheckUserNameOrEmailExist;
+﻿using ChatApp.Application.Features.Accounts.Command.CheckUserNameOrEmailExist;
 using ChatApp.Application.Features.Accounts.Command.Login;
 using ChatApp.Application.Features.Accounts.Command.Register;
+using ChatApp.Application.Features.Accounts.Queries.GetAllUsers;
+using ChatApp.Application.Features.Accounts.Queries.GetCurrentUser;
+using ChatApp.Application.Features.Accounts.Queries.GetUserByUserId;
+using ChatApp.Application.Features.Accounts.Queries.GetUserByUserName;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -46,7 +49,7 @@ namespace ChatApp.API.Controllers
                 return NotFound(ex.Message);
             }
         }
-        
+
         /// <summary>
         /// Take Data From Body
         /// </summary>
@@ -111,10 +114,71 @@ namespace ChatApp.API.Controllers
             try
             {
                 var result = await _mediator.Send(new CheckUserNameOrEmailExistQuery(searchTerm), cancellationToken);
-                if(result)
+                if (result)
                     return Ok(result);
 
                 return NotFound(false);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+
+        [HttpGet("get-all-user")]
+        public async Task<ActionResult<IReadOnlyList<MemberDto>>> GetAllUsers(CancellationToken cancellationToken)
+        {
+            try
+            {
+                var users = await _mediator.Send(new GetAllUsersQuery(), cancellationToken);
+                if (users is not null)
+                    return Ok(users);
+
+                return NotFound();
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+
+        [HttpGet("get-user-by-userName/{userName}")]
+        public async Task<ActionResult<MemberDto>> GetUserByUserName(string userName, CancellationToken cancellationToken)
+        {
+            try
+            {
+                if (!string.IsNullOrEmpty(userName))
+                {
+                    var user = await _mediator.Send(new GetUserByUserNameQuery(userName), cancellationToken);
+                    if (user is not null)
+                        return Ok(user);
+
+                    return NotFound();
+                }
+
+                return NotFound();
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+
+        [HttpGet("get-user-by-Id/{userId}")]
+        public async Task<ActionResult<MemberDto>> GetUserByUserId(string userId, CancellationToken cancellationToken)
+        {
+            try
+            {
+                if (!string.IsNullOrEmpty(userId))
+                {
+                    var user = await _mediator.Send(new GetUserByUserIdQuery(userId), cancellationToken);
+                    if (user is not null)
+                        return Ok(user);
+
+                    return NotFound();
+                }
+
+                return NotFound();
             }
             catch (Exception ex)
             {

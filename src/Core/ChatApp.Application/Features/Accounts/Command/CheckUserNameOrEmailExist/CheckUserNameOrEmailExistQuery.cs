@@ -8,7 +8,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace ChatApp.Application.Features.Accounts.Command.GetCurrentUser.CheckUserNameOrEmailExist
+namespace ChatApp.Application.Features.Accounts.Command.CheckUserNameOrEmailExist
 {
     public class CheckUserNameOrEmailExistQuery : IRequest<bool>
     {

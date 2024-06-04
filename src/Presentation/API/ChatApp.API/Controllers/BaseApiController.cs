@@ -5,6 +5,7 @@ namespace ChatApp.API.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
+    [Produces("application/json")]
     public class BaseApiController : ControllerBase
     {
         private readonly IMediator _mediator;

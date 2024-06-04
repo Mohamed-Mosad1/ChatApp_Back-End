@@ -10,7 +10,7 @@ using System.Security.Claims;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace ChatApp.Application.Features.Accounts.Command.GetCurrentUser
+namespace ChatApp.Application.Features.Accounts.Queries.GetCurrentUser
 {
     public class GetCurrentUserQuery : IRequest<UserToReturnDto>
     {
@@ -50,9 +50,9 @@ namespace ChatApp.Application.Features.Accounts.Command.GetCurrentUser
                     return null;
 
                 }
-                catch (Exception)
+                catch (Exception ex)
                 {
-                    return null;
+                    throw new ApplicationException(ex.Message);
                 }
             }
         }

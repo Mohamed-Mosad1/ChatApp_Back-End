@@ -1,6 +1,5 @@
 ﻿using ChatApp.Core.Common;
 using ChatApp.Core.Entities;
-using ChatApp.Domain.Entities;
 using ChatApp.Domain.Entities.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
