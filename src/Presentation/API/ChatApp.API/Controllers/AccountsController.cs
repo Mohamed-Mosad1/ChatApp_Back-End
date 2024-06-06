@@ -1,6 +1,7 @@
 ﻿using ChatApp.Application.Features.Accounts.Command.CheckUserNameOrEmailExist;
 using ChatApp.Application.Features.Accounts.Command.Login;
 using ChatApp.Application.Features.Accounts.Command.Register;
+using ChatApp.Application.Features.Accounts.Command.UpdateCurrentMember;
 using ChatApp.Application.Features.Accounts.Queries.GetAllUsers;
 using ChatApp.Application.Features.Accounts.Queries.GetCurrentUser;
 using ChatApp.Application.Features.Accounts.Queries.GetUserByUserId;
@@ -20,7 +21,7 @@ namespace ChatApp.API.Controllers
             _mediator = mediator;
         }
 
-
+        [AllowAnonymous]
         [HttpPost("Login")]
         public async Task<ActionResult<LoginDto>> Login([FromBody] LoginDto loginDto)
         {
@@ -64,6 +65,7 @@ namespace ChatApp.API.Controllers
         [HttpPost("Register")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesDefaultResponseType]
+        [AllowAnonymous]
         public async Task<ActionResult<RegisterDto>> Register([FromBody] RegisterDto registerDto)
         {
             try
@@ -89,7 +91,6 @@ namespace ChatApp.API.Controllers
             }
         }
 
-        [Authorize]
         [HttpGet("get-current-user")]
         public async Task<ActionResult<UserToReturnDto>> GetCurrentUser(CancellationToken cancellationToken)
         {
@@ -125,7 +126,7 @@ namespace ChatApp.API.Controllers
             }
         }
 
-        [HttpGet("get-all-user")]
+        [HttpGet("get-all-users")]
         public async Task<ActionResult<IReadOnlyList<MemberDto>>> GetAllUsers(CancellationToken cancellationToken)
         {
             try
@@ -183,6 +184,26 @@ namespace ChatApp.API.Controllers
             catch (Exception ex)
             {
                 return BadRequest(ex.Message);
+            }
+        }
+
+        [HttpPut("update-current-member")]
+        public async Task<ActionResult<UpdateCurrentMemberDto>> UpdateCurrentMember([FromBody] UpdateCurrentMemberDto updateCurrentMemberDto)
+        {
+            try
+            {
+                var command = new UpdateCurrentMemberCommand(updateCurrentMemberDto);
+                var response = await _mediator.Send(command);
+                if (response.IsSuccess) 
+                    return Ok(response.Data);
+
+                return BadRequest(response.Errors);
+
+            }
+            catch (Exception)
+            {
+
+                throw;
             }
         }
 
