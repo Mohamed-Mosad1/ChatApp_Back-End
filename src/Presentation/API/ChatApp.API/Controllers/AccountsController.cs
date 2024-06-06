@@ -1,7 +1,9 @@
 ﻿using ChatApp.Application.Features.Accounts.Command.CheckUserNameOrEmailExist;
 using ChatApp.Application.Features.Accounts.Command.Login;
 using ChatApp.Application.Features.Accounts.Command.Register;
+using ChatApp.Application.Features.Accounts.Command.RemovePhoto;
 using ChatApp.Application.Features.Accounts.Command.UpdateCurrentMember;
+using ChatApp.Application.Features.Accounts.Command.UploadPhoto;
 using ChatApp.Application.Features.Accounts.Queries.GetAllUsers;
 using ChatApp.Application.Features.Accounts.Queries.GetCurrentUser;
 using ChatApp.Application.Features.Accounts.Queries.GetUserByUserId;
@@ -25,30 +27,21 @@ namespace ChatApp.API.Controllers
         [HttpPost("Login")]
         public async Task<ActionResult<LoginDto>> Login([FromBody] LoginDto loginDto)
         {
-            try
+            if (!ModelState.IsValid)
             {
-                if (ModelState.IsValid)
-                {
-                    var command = new LoginCommand(loginDto);
-                    var response = await _mediator.Send(command);
-                    if (response.IsSuccess)
-                        return Ok(response.Data);
-
-                    if (response.IsSuccess == false && response.Message == "UnAuthorized")
-                        return Unauthorized();
-
-                    if (response.IsSuccess == false && response.Message == "NotFound")
-                        return NotFound();
-
-                    return BadRequest(response.Message);
-                }
-
-                return NotFound();
+                return BadRequest(ModelState);
             }
-            catch (Exception ex)
+
+            var command = new LoginCommand(loginDto);
+            var response = await _mediator.Send(command);
+
+            return response.IsSuccess switch
             {
-                return NotFound(ex.Message);
-            }
+                true => Ok(response.Data),
+                false when response.Message == "UnAuthorized" => Unauthorized(),
+                false when response.Message == "NotFound" => NotFound(),
+                _ => BadRequest(response.Message)
+            };
         }
 
         /// <summary>
@@ -204,6 +197,42 @@ namespace ChatApp.API.Controllers
             {
 
                 throw;
+            }
+        }
+
+        [HttpPost("upload-photo")]
+        public async Task<ActionResult> UploadPhoto(IFormFile file)
+        {
+            try
+            {
+                var command = new UploadPhotoCommand() { PhotoFile = file };
+                var response = await _mediator.Send(command);
+                if (response)
+                    return Ok("Photo Uploaded Successfully");
+
+                return BadRequest("Unable to upload photo");
+            }
+            catch (Exception ex)
+            {
+                return BadRequest($"Unable to upload photo {ex.Message}");
+            }
+        }
+        
+        [HttpPost("remove-photo")]
+        public async Task<ActionResult> RemovePhoto(int photoId)
+        {
+            try
+            {
+                var command = new RemovePhotoCommand(photoId);
+                var response = await _mediator.Send(command);
+                if (response)
+                    return Ok("Photo Removed Successfully");
+
+                return BadRequest("Unable to Remove photo");
+            }
+            catch (Exception ex)
+            {
+                return BadRequest($"Unable to Remove photo {ex.Message}");
             }
         }
 
