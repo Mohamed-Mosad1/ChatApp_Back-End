@@ -2,6 +2,7 @@
 using ChatApp.Application.Features.Accounts.Command.Login;
 using ChatApp.Application.Features.Accounts.Command.Register;
 using ChatApp.Application.Features.Accounts.Command.RemovePhoto;
+using ChatApp.Application.Features.Accounts.Command.SetMainPhoto;
 using ChatApp.Application.Features.Accounts.Command.UpdateCurrentMember;
 using ChatApp.Application.Features.Accounts.Command.UploadPhoto;
 using ChatApp.Application.Features.Accounts.Queries.GetAllUsers;
@@ -61,27 +62,20 @@ namespace ChatApp.API.Controllers
         [AllowAnonymous]
         public async Task<ActionResult<RegisterDto>> Register([FromBody] RegisterDto registerDto)
         {
-            try
+            if (!ModelState.IsValid)
             {
-                if (ModelState.IsValid)
-                {
-                    var command = new RegisterCommand(registerDto);
-                    var response = await _mediator.Send(command);
-                    if (response.IsSuccess)
-                        return Ok(response.Data);
-
-                    if (response.IsSuccess == false)
-                        return BadRequest(response.Errors);
-
-                    return BadRequest(response.Message);
-                }
-
-                return BadRequest();
+                return BadRequest(ModelState);
             }
-            catch (Exception ex)
+
+            var command = new RegisterCommand(registerDto);
+            var response = await _mediator.Send(command);
+
+            return response.IsSuccess switch
             {
-                return NotFound(ex.Message);
-            }
+                true => Ok(response.Data),
+                false when response.Errors != null => BadRequest(new { Errors = response.Errors }),
+                _ => BadRequest("An unknown error occurred.")
+            };
         }
 
         [HttpGet("get-current-user")]
@@ -141,16 +135,13 @@ namespace ChatApp.API.Controllers
         {
             try
             {
-                if (!string.IsNullOrEmpty(userName))
+                if (string.IsNullOrEmpty(userName))
                 {
-                    var user = await _mediator.Send(new GetUserByUserNameQuery(userName), cancellationToken);
-                    if (user is not null)
-                        return Ok(user);
-
                     return NotFound();
                 }
 
-                return NotFound();
+                var user = await _mediator.Send(new GetUserByUserNameQuery(userName), cancellationToken);
+                return user is not null ? Ok(user) : NotFound();
             }
             catch (Exception ex)
             {
@@ -163,16 +154,13 @@ namespace ChatApp.API.Controllers
         {
             try
             {
-                if (!string.IsNullOrEmpty(userId))
+                if (string.IsNullOrEmpty(userId))
                 {
-                    var user = await _mediator.Send(new GetUserByUserIdQuery(userId), cancellationToken);
-                    if (user is not null)
-                        return Ok(user);
-
                     return NotFound();
                 }
 
-                return NotFound();
+                var user = await _mediator.Send(new GetUserByUserIdQuery(userId), cancellationToken);
+                return user is not null ? Ok(user) : NotFound();
             }
             catch (Exception ex)
             {
@@ -193,15 +181,14 @@ namespace ChatApp.API.Controllers
                 return BadRequest(response.Errors);
 
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-
-                throw;
+                return BadRequest(ex.Message);
             }
         }
 
         [HttpPost("upload-photo")]
-        public async Task<ActionResult> UploadPhoto(IFormFile file)
+        public async Task<IActionResult> UploadPhoto(IFormFile file)
         {
             try
             {
@@ -217,9 +204,17 @@ namespace ChatApp.API.Controllers
                 return BadRequest($"Unable to upload photo {ex.Message}");
             }
         }
-        
-        [HttpPost("remove-photo")]
-        public async Task<ActionResult> RemovePhoto(int photoId)
+
+        /// <summary>
+        /// This Endpoint Remove Member Photo
+        /// </summary>
+        /// <param name="photoId"></param>
+        /// <returns></returns>
+        /// <remarks>
+        /// api/Accounts/remove-photo/{photoId}
+        /// </remarks>
+        [HttpDelete("remove-photo/{photoId}")]
+        public async Task<IActionResult> RemovePhoto(int photoId)
         {
             try
             {
@@ -233,6 +228,36 @@ namespace ChatApp.API.Controllers
             catch (Exception ex)
             {
                 return BadRequest($"Unable to Remove photo {ex.Message}");
+            }
+        }
+
+        /// <summary>
+        /// This Endpoint Set Main Photo
+        /// </summary>
+        /// <param name="photoId"></param>
+        /// <returns></returns>
+        /// <remarks>
+        /// URL => api/Accounts/set-main-photo/{photoId}
+        /// </remarks>
+        [HttpPut("set-main-photo/{photoId}")]
+        public async Task<IActionResult> SetMainPhoto(int photoId)
+        {
+            try
+            {
+                if(photoId > 0)
+                {
+                    var command = new SetMainPhotoCommand(photoId);
+                    var response = await _mediator.Send(command);
+                    if (response)
+                        return Ok("Photo Assigned Successfully");
+
+                }
+
+                return NotFound($"This ID {photoId} is not found");
+            }
+            catch (Exception ex)
+            {
+                return BadRequest($"Unable to set main photo {ex.Message}");
             }
         }
 

@@ -4,11 +4,8 @@ using ChatApp.Application.Responses;
 using ChatApp.Domain.Entities.Identity;
 using MediatR;
 using Microsoft.AspNetCore.Identity;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 
 namespace ChatApp.Application.Features.Accounts.Command.Login
 {
@@ -24,62 +21,67 @@ namespace ChatApp.Application.Features.Accounts.Command.Login
         class Handler : IRequestHandler<LoginCommand, BaseCommonResponse>
         {
             private readonly UserManager<AppUser> _userManager;
-            private readonly RoleManager<IdentityRole> _roleManager;
             private readonly SignInManager<AppUser> _signInManager;
             private readonly ITokenService _tokenService;
             private readonly IMapper _mapper;
+            private readonly IConfiguration _configuration;
 
             public Handler(
                 UserManager<AppUser> userManager,
-                RoleManager<IdentityRole> roleManager,
                 SignInManager<AppUser> signInManager,
                 ITokenService tokenService,
-                IMapper mapper)
+                IMapper mapper,
+                IConfiguration configuration)
             {
                 _userManager = userManager;
-                _roleManager = roleManager;
                 _signInManager = signInManager;
                 _tokenService = tokenService;
                 _mapper = mapper;
+                _configuration = configuration;
             }
 
             public async Task<BaseCommonResponse> Handle(LoginCommand request, CancellationToken cancellationToken)
             {
-                BaseCommonResponse res = new BaseCommonResponse();
+                var response = new BaseCommonResponse();
+
                 try
                 {
-                    var user = await _userManager.FindByNameAsync(request.LoginDto.UserName);
+                    var user = await _userManager.Users.Include(x=>x.Photos).FirstOrDefaultAsync(x=>x.UserName == request.LoginDto.UserName);
 
-                    if (user is not null)
+                    if (user == null)
                     {
-                        var result = await _signInManager.CheckPasswordSignInAsync(user, request.LoginDto.Password, false);
-                        if (request is not null && result.Succeeded)
-                        {
-                            res.IsSuccess = true;
-                            res.Message = "Login Success";
-                            res.Data = new
-                            {
-                                userName = user.UserName,
-                                email = user.Email,
-                                token = await _tokenService.CreateTokenAsync(user)
-                            };
-
-                            return res;
-                        }
-                        res.IsSuccess = false;
-                        res.Message = "UnAuthorized";
-                        return res;
+                        response.IsSuccess = false;
+                        response.Message = "User not found";
+                        return response;
                     }
 
-                    res.IsSuccess = false;
-                    res.Message = "NotFound";
-                    return res;
+                    var result = await _signInManager.CheckPasswordSignInAsync(user, request.LoginDto.Password, false);
+
+                    if (result.Succeeded)
+                    {
+                        response.IsSuccess = true;
+                        response.Message = "Login successful";
+                        response.Data = new
+                        {
+                            userName = user.UserName,
+                            email = user.Email,
+                            token = await _tokenService.CreateTokenAsync(user),
+                            photoUrl = _configuration["BaseApiUrl"] + user.Photos.FirstOrDefault(p => p.IsMain && p.IsActive)?.Url
+                        };
+                    }
+                    else
+                    {
+                        response.IsSuccess = false;
+                        response.Message = "Unauthorized";
+                    }
+
+                    return response;
                 }
                 catch (Exception ex)
                 {
-                    res.IsSuccess = false;
-                    res.Message = ex.InnerException.Message;
-                    return res;
+                    response.IsSuccess = false;
+                    response.Message = $"An error occurred: {ex.Message}";
+                    return response;
                 }
             }
         }

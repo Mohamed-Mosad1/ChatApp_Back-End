@@ -96,6 +96,8 @@ namespace ChatApp.API
 
             app.UseHttpsRedirection();
 
+            app.UseStaticFiles();
+
             app.UseCors("CorsPolicy");
 
             app.UseAuthentication();

@@ -11,5 +11,6 @@ namespace ChatApp.Application.Persistence.Contracts
         Task<AppUser?> GetUserByUserNameAsync(string userName);
         Task<string> UploadPhotoAsync(IFormFile file, string pathName);
         Task<bool> RemovePhotoAsync(int photoId);
+        Task<bool> SetMainPhotoAsync(int photoId);
     }
 }

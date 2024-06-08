@@ -105,5 +105,28 @@ namespace ChatApp.Persistence.Repositories
             return false;
         }
 
+        public async Task<bool> SetMainPhotoAsync(int photoId)
+        {
+            var userName = _httpContext?.HttpContext?.User.Claims
+                              .FirstOrDefault(u => u.Type == ClaimTypes.GivenName)?.Value;
+
+            if (userName == null) return false;
+
+            var user = await _userManager.FindByNameAsync(userName);
+            if (user == null) return false;
+
+            var currentPhotos = await _dbContext.Photos
+                                   .Where(p => p.AppUserId == user.Id).ToListAsync();
+
+            foreach (var photo in currentPhotos)
+            {
+                photo.IsMain = photo.Id == photoId;
+            }
+
+            await _dbContext.SaveChangesAsync();
+
+            return currentPhotos.Any(p => p.Id == photoId && p.IsMain);
+        }
+
     }
 }

@@ -17,5 +17,25 @@
             //BaseUrl + /api/Register
             </remarks>
         </member>
+        <member name="M:ChatApp.API.Controllers.AccountsController.RemovePhoto(System.Int32)">
+            <summary>
+            This Endpoint Remove Member Photo
+            </summary>
+            <param name="photoId"></param>
+            <returns></returns>
+            <remarks>
+            api/Accounts/remove-photo/{photoId}
+            </remarks>
+        </member>
+        <member name="M:ChatApp.API.Controllers.AccountsController.SetMainPhoto(System.Int32)">
+            <summary>
+            This Endpoint Set Main Photo
+            </summary>
+            <param name="photoId"></param>
+            <returns></returns>
+            <remarks>
+            URL => api/Accounts/set-main-photo/{photoId}
+            </remarks>
+        </member>
     </members>
 </doc>
