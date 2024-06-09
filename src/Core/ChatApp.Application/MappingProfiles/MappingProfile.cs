@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using ChatApp.Application.Extensions;
+using ChatApp.Application.Features.Accounts.Command.Register;
 using ChatApp.Application.Features.Accounts.Queries.GetAllUsers;
 using ChatApp.Application.Features.Messages.Command.AddMessage;
 using ChatApp.Application.Features.Messages.Query.GetAllMessages;
@@ -13,22 +14,24 @@ namespace ChatApp.Application.MappingProfiles
     {
         public MappingProfile()
         {
-            // Mapping Message
+            // Mapping Message with AddMessageDto and MessageReturnDto
             CreateMap<Message, AddMessageDto>().ReverseMap();
 
             CreateMap<Message, MessageReturnDto>().ReverseMap();
 
-            // Mapping User and Photos
+            // Mapping User with Photos
             CreateMap<AppUser, MemberDto>()
                 .ForMember(d => d.PhotoUrl, opt => opt.MapFrom<PhotoMemberResolver>())
                 .ForMember(d => d.Age, opt => opt.MapFrom(s => s.DateOfBirth.CalculateAge()))
                 .ReverseMap();
 
+            // Mapping Photo with PhotoDto
             CreateMap<Photo, PhotoDto>()
                 .ForMember(d=>d.Url, opt=>opt.MapFrom<UserPhotoResolver>())
                 .ReverseMap();
 
-
+            // Mapping AppUser with RegisterDto
+            CreateMap<AppUser, RegisterDto>().ReverseMap();
 
         }
     }

@@ -1,4 +1,6 @@
-﻿using ChatApp.Application.Persistence.Contracts;
+﻿using AutoMapper;
+using ChatApp.Application.Features.Accounts.Validators;
+using ChatApp.Application.Persistence.Contracts;
 using ChatApp.Application.Responses;
 using ChatApp.Domain.Entities.Identity;
 using MediatR;
@@ -8,25 +10,28 @@ namespace ChatApp.Application.Features.Accounts.Command.Register
 {
     public class RegisterCommand : IRequest<BaseCommonResponse>
     {
-        private readonly RegisterDto _registerDto;
+        private readonly RegisterDto RegisterDto;
 
         public RegisterCommand(RegisterDto registerDto)
         {
-            _registerDto = registerDto;
+            RegisterDto = registerDto;
         }
 
         class Handler : IRequestHandler<RegisterCommand, BaseCommonResponse>
         {
             private readonly UserManager<AppUser> _userManager;
             private readonly ITokenService _tokenService;
+            private readonly IMapper _mapper;
 
             public Handler(
                 UserManager<AppUser> userManager,
-                ITokenService tokenService
+                ITokenService tokenService,
+                IMapper mapper
                 )
             {
                 _userManager = userManager;
                 _tokenService = tokenService;
+                _mapper = mapper;
             }
 
             public async Task<BaseCommonResponse> Handle(RegisterCommand request, CancellationToken cancellationToken)
@@ -35,13 +40,19 @@ namespace ChatApp.Application.Features.Accounts.Command.Register
 
                 try
                 {
-                    var user = new AppUser()
+                    var validator = new RegisterValidator();
+                    var validatorResult = await validator.ValidateAsync(request.RegisterDto, cancellationToken);
+                    if (!validatorResult.IsValid)
                     {
-                        Email = request._registerDto.Email,
-                        UserName = request._registerDto.UserName
-                    };
+                        res.IsSuccess = false;
+                        res.Message = "While Validate Register Date";
+                        res.Errors = validatorResult.Errors.Select(x=>x.ErrorMessage).ToList();
+                        return res;
+                    }
 
-                    var response = await _userManager.CreateAsync(user, request._registerDto.Password);
+                    var user = _mapper.Map<RegisterDto, AppUser>(request.RegisterDto);
+
+                    var response = await _userManager.CreateAsync(user, request.RegisterDto.Password);
                     if (!response.Succeeded)
                     {
                         foreach (var err in response.Errors)
@@ -57,6 +68,7 @@ namespace ChatApp.Application.Features.Accounts.Command.Register
                     res.Data = new
                     {
                         userName = user.UserName,
+                        knownAs = user.KnownAs,
                         email = user.Email,
                         token = await _tokenService.CreateTokenAsync(user)
                     };
