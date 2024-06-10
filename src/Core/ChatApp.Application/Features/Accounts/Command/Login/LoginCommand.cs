@@ -65,6 +65,7 @@ namespace ChatApp.Application.Features.Accounts.Command.Login
                         {
                             userName = user.UserName,
                             email = user.Email,
+                            gender = user.Gender,
                             token = await _tokenService.CreateTokenAsync(user),
                             photoUrl = _configuration["BaseApiUrl"] + user.Photos.FirstOrDefault(p => p.IsMain && p.IsActive)?.Url
                         };

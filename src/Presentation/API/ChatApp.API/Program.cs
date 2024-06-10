@@ -56,7 +56,7 @@ namespace ChatApp.API
                 opt.AddPolicy("CorsPolicy", policy =>
                 {
                     policy.WithOrigins("http://localhost:4200")
-                          .AllowAnyHeader().AllowAnyMethod();
+                          .AllowAnyHeader().AllowAnyMethod().AllowCredentials();
                 });
             });
 

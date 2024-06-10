@@ -10,8 +10,10 @@ using ChatApp.Domain.Entities.Identity;
 
 namespace ChatApp.Application.MappingProfiles
 {
-    internal class MappingProfile : Profile
+    public class MappingProfile : Profile
     {
+        private const string baseUrl = "https://localhost:44364/";
+
         public MappingProfile()
         {
             // Mapping Message with AddMessageDto and MessageReturnDto
@@ -21,7 +23,8 @@ namespace ChatApp.Application.MappingProfiles
 
             // Mapping User with Photos
             CreateMap<AppUser, MemberDto>()
-                .ForMember(d => d.PhotoUrl, opt => opt.MapFrom<PhotoMemberResolver>())
+                .ForMember(d => d.PhotoUrl, opt => opt.MapFrom(s=>baseUrl + s.Photos.FirstOrDefault(x=>x.IsMain).Url))
+                //.ForMember(d => d.PhotoUrl, opt => opt.MapFrom<PhotoMemberResolver>())
                 .ForMember(d => d.Age, opt => opt.MapFrom(s => s.DateOfBirth.CalculateAge()))
                 .ReverseMap();
 

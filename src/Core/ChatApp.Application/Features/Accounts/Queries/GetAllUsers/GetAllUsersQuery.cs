@@ -1,12 +1,21 @@
 ﻿using AutoMapper;
+using ChatApp.Application.Helpers;
 using ChatApp.Application.Persistence.Contracts;
+using ChatApp.Persistence.Helpers;
 using MediatR;
 
 namespace ChatApp.Application.Features.Accounts.Queries.GetAllUsers
 {
-    public class GetAllUsersQuery : IRequest<List<MemberDto>>
+    public class GetAllUsersQuery : IRequest<PagedList<MemberDto>>
     {
-        class Handler : IRequestHandler<GetAllUsersQuery, List<MemberDto>>
+        public UserParams UserParams { get; set; }
+
+        public GetAllUsersQuery(UserParams userParams)
+        {
+            UserParams = userParams;
+        }
+
+        class Handler : IRequestHandler<GetAllUsersQuery, PagedList<MemberDto>>
         {
             private readonly IUserRepository _userRepository;
             private readonly IMapper _mapper;
@@ -17,14 +26,14 @@ namespace ChatApp.Application.Features.Accounts.Queries.GetAllUsers
                 _mapper = mapper;
             }
 
-            public async Task<List<MemberDto>> Handle(GetAllUsersQuery request, CancellationToken cancellationToken)
+            public async Task<PagedList<MemberDto>> Handle(GetAllUsersQuery request, CancellationToken cancellationToken)
             {
                 try
                 {
-                    var users = await _userRepository.GetAllUsersAsync();
-                    var mappedUsers = _mapper.Map<List<MemberDto>>(users);
+                    var users = await _userRepository.GetAllMembersAsync(request.UserParams);
+                    //var mappedUsers = _mapper.Map<List<MemberDto>>(users);
 
-                    return mappedUsers;
+                    return users;
                 }
                 catch (Exception)
                 {

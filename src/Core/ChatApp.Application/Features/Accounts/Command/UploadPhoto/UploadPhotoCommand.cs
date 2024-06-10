@@ -6,10 +6,10 @@ using Microsoft.AspNetCore.Identity;
 
 namespace ChatApp.Application.Features.Accounts.Command.UploadPhoto
 {
-    public class UploadPhotoCommand : IRequest<bool>
+    public class UploadPhotoCommand : IRequest<PhotoDto>
     {
-        public IFormFile PhotoFile { get; set; }
-        class Handler : IRequestHandler<UploadPhotoCommand, bool>
+        public IFormFile? PhotoFile { get; set; }
+        class Handler : IRequestHandler<UploadPhotoCommand, PhotoDto?>
         {
             private readonly IUserRepository _userRepository;
             private readonly IHttpContextAccessor _httpContext;
@@ -22,15 +22,20 @@ namespace ChatApp.Application.Features.Accounts.Command.UploadPhoto
                 _userManager = userManager;
             }
 
-            public async Task<bool> Handle(UploadPhotoCommand request, CancellationToken cancellationToken)
+            public async Task<PhotoDto?> Handle(UploadPhotoCommand request, CancellationToken cancellationToken)
             {
-                if (request.PhotoFile is null)
+                if (request.PhotoFile is not null)
                 {
-                    return false;
+                    var result = await _userRepository.UploadPhotoAsync(request.PhotoFile, "User");
+                    if (result is not null)
+                    {
+                        return result;
+                    }
+
+                    return null;
                 }
 
-                var result = await _userRepository.UploadPhotoAsync(request.PhotoFile, "User");
-                return !string.IsNullOrEmpty(result);
+                return null;
             }
         }
     }

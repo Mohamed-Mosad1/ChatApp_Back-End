@@ -70,7 +70,9 @@ namespace ChatApp.Application.Features.Accounts.Command.Register
                         userName = user.UserName,
                         knownAs = user.KnownAs,
                         email = user.Email,
-                        token = await _tokenService.CreateTokenAsync(user)
+                        gender = user.Gender,
+                        token = await _tokenService.CreateTokenAsync(user),
+                        photoUrl = user.Photos.FirstOrDefault(p=>p.IsMain)?.Url
                     };
 
                     return res;

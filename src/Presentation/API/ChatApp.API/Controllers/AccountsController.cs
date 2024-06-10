@@ -9,6 +9,9 @@ using ChatApp.Application.Features.Accounts.Queries.GetAllUsers;
 using ChatApp.Application.Features.Accounts.Queries.GetCurrentUser;
 using ChatApp.Application.Features.Accounts.Queries.GetUserByUserId;
 using ChatApp.Application.Features.Accounts.Queries.GetUserByUserName;
+using ChatApp.Domain.Entities.Identity;
+using ChatApp.Persistence.Extensions;
+using ChatApp.Persistence.Helpers;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -114,13 +117,16 @@ namespace ChatApp.API.Controllers
         }
 
         [HttpGet("get-all-users")]
-        public async Task<ActionResult<IReadOnlyList<MemberDto>>> GetAllUsers(CancellationToken cancellationToken)
+        public async Task<ActionResult<IReadOnlyList<MemberDto>>> GetAllUsers([FromQuery] UserParams userParams, CancellationToken cancellationToken)
         {
             try
             {
-                var users = await _mediator.Send(new GetAllUsersQuery(), cancellationToken);
+                var users = await _mediator.Send(new GetAllUsersQuery(userParams), cancellationToken);
                 if (users is not null)
+                {
+                    Response.AddPaginationHeader(users.CurrentPage, users.PageSize, users.TotalCount, users.TotalPages);
                     return Ok(users);
+                }
 
                 return NotFound();
             }
@@ -187,14 +193,25 @@ namespace ChatApp.API.Controllers
             }
         }
 
+        /// <summary>
+        /// This Endpoint Take file(image) and added photo to table
+        /// api/Accounts/upload-photo
+        /// </summary>
+        /// <param name="file"></param>
+        /// <returns>
+        /// Object Of Photo Class
+        /// </returns>
+        /// <remarks>
+        /// Take From File
+        /// </remarks>
         [HttpPost("upload-photo")]
-        public async Task<IActionResult> UploadPhoto(IFormFile file)
+        public async Task<ActionResult<PhotoDto>> UploadPhoto(IFormFile file)
         {
             try
             {
                 var command = new UploadPhotoCommand() { PhotoFile = file };
                 var response = await _mediator.Send(command);
-                if (response)
+                if (response is not null)
                     return Ok("Photo Uploaded Successfully");
 
                 return BadRequest("Unable to upload photo");

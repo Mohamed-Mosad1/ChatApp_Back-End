@@ -1,4 +1,7 @@
-﻿using ChatApp.Domain.Entities.Identity;
+﻿using ChatApp.Application.Features.Accounts.Queries.GetAllUsers;
+using ChatApp.Application.Helpers;
+using ChatApp.Domain.Entities.Identity;
+using ChatApp.Persistence.Helpers;
 using Microsoft.AspNetCore.Http;
 
 namespace ChatApp.Application.Persistence.Contracts
@@ -9,8 +12,9 @@ namespace ChatApp.Application.Persistence.Contracts
         Task<IReadOnlyList<AppUser>> GetAllUsersAsync();
         Task<AppUser?> GetUserByIdAsync(string userId);
         Task<AppUser?> GetUserByUserNameAsync(string userName);
-        Task<string> UploadPhotoAsync(IFormFile file, string pathName);
+        Task<PhotoDto?> UploadPhotoAsync(IFormFile file, string pathName);
         Task<bool> RemovePhotoAsync(int photoId);
         Task<bool> SetMainPhotoAsync(int photoId);
+        Task<PagedList<MemberDto>> GetAllMembersAsync(UserParams userParams);
     }
 }

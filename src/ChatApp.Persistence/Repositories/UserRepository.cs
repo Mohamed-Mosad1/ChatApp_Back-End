@@ -1,4 +1,8 @@
-﻿using ChatApp.Application.Persistence.Contracts;
+﻿using AutoMapper;
+using AutoMapper.QueryableExtensions;
+using ChatApp.Application.Features.Accounts.Queries.GetAllUsers;
+using ChatApp.Application.Helpers;
+using ChatApp.Application.Persistence.Contracts;
 using ChatApp.Domain.Entities.Identity;
 using ChatApp.Persistence.DatabaseContext;
 using ChatApp.Persistence.Helpers;
@@ -16,18 +20,21 @@ namespace ChatApp.Persistence.Repositories
         private readonly UserManager<AppUser> _userManager;
         private readonly IWebHostEnvironment _webHost;
         private readonly IHttpContextAccessor _httpContext;
+        private readonly IMapper _mapper;
 
         public UserRepository(
             ApplicationDbContext dbContext,
             UserManager<AppUser> userManager,
             IWebHostEnvironment webHost,
-            IHttpContextAccessor httpContext
+            IHttpContextAccessor httpContext,
+            IMapper mapper
             )
         {
             _dbContext = dbContext;
             _userManager = userManager;
             _webHost = webHost;
             _httpContext = httpContext;
+            _mapper = mapper;
         }
 
         public async Task<IReadOnlyList<AppUser>> GetAllUsersAsync()
@@ -56,39 +63,38 @@ namespace ChatApp.Persistence.Repositories
 
         }
 
-        public async Task<string> UploadPhotoAsync(IFormFile file, string pathName)
+        public async Task<PhotoDto?> UploadPhotoAsync(IFormFile file, string pathName)
         {
-            if (file == null)
+            if (file is null)
             {
                 throw new ArgumentException("File cannot be null", nameof(file));
             }
 
             var userName = _httpContext.HttpContext?.User.Claims.FirstOrDefault(u => u.Type == ClaimTypes.GivenName)?.Value;
-            if (userName == null)
+            if (userName is not null)
             {
-                throw new Exception("User not found");
+                var user = await _userManager.FindByNameAsync(userName);
+                if (user is not null)
+                {
+                    var photoUrl = await PhotoManager.UploadPhotoAsync(_webHost, file, pathName);
+                    var photo = new Photo()
+                    {
+                        Url = photoUrl,
+                        AppUserId = user.Id,
+                        IsActive = true
+                    };
+
+                    await _dbContext.Photos.AddAsync(photo);
+                    await _dbContext.SaveChangesAsync();
+
+                    var mappedPhoto = _mapper.Map<PhotoDto>(photo);
+
+                    return mappedPhoto;
+                }
             }
 
-            var user = await _userManager.FindByNameAsync(userName);
-            if (user == null)
-            {
-                throw new Exception("User not found");
-            }
-
-            var photoUrl = await PhotoManager.UploadPhotoAsync(_webHost, file, pathName);
-            var photo = new Photo
-            {
-                Url = photoUrl,
-                AppUserId = user.Id,
-                IsActive = true
-            };
-
-            await _dbContext.Photos.AddAsync(photo);
-            await _dbContext.SaveChangesAsync();
-
-            return photoUrl;
+            return null;
         }
-
 
         public async Task<bool> RemovePhotoAsync(int photoId)
         {
@@ -126,6 +132,31 @@ namespace ChatApp.Persistence.Repositories
             await _dbContext.SaveChangesAsync();
 
             return currentPhotos.Any(p => p.Id == photoId && p.IsMain);
+        }
+
+        public async Task<PagedList<MemberDto>> GetAllMembersAsync(UserParams userParams)
+        {
+            var query = _dbContext.Users.Include(x => x.Photos).AsQueryable();
+
+            // Apply filters
+            query = query.Where(x => x.UserName != userParams.CurrentUserName);
+
+            if (!string.IsNullOrEmpty(userParams.Gender))
+            {
+                query = query.Where(x => x.Gender == userParams.Gender);
+            }
+
+            if (userParams.MinAge > 0 || userParams.MaxAge < int.MaxValue)
+            {
+                var maxDob = DateTime.Today.AddYears(-userParams.MinAge);
+                var minDob = DateTime.Today.AddYears(-userParams.MaxAge - 1);
+
+                query = query.Where(x => x.DateOfBirth >= minDob && x.DateOfBirth <= maxDob);
+            }
+
+            var result = query.ProjectTo<MemberDto>(_mapper.ConfigurationProvider);
+
+            return await PagedList<MemberDto>.CreateAsync(result, userParams.PageNumber, userParams.PageSize);
         }
 
     }
