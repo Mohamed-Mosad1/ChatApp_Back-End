@@ -154,6 +154,13 @@ namespace ChatApp.Persistence.Repositories
                 query = query.Where(x => x.DateOfBirth >= minDob && x.DateOfBirth <= maxDob);
             }
 
+            // Sorting by last active
+            query = userParams.OrderBy switch
+            {
+                "created" => query.OrderByDescending(x => x.Created),
+                _ => query.OrderByDescending(x => x.LastActive)
+            };
+
             var result = query.ProjectTo<MemberDto>(_mapper.ConfigurationProvider);
 
             return await PagedList<MemberDto>.CreateAsync(result, userParams.PageNumber, userParams.PageSize);
