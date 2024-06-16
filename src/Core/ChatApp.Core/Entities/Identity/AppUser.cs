@@ -15,6 +15,9 @@ namespace ChatApp.Domain.Entities.Identity
         public string? City { get; set; }
         public string? Country { get; set; }
         public ICollection<Photo> Photos { get; set; } = new HashSet<Photo>();
+        public ICollection<UserLike> LikeUser { get; set; } = new HashSet<UserLike>();
+        public ICollection<UserLike> LikedByUser { get; set; } = new HashSet<UserLike>();
+
 
     }
 }

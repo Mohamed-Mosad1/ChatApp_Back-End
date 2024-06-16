@@ -29,6 +29,7 @@ namespace ChatApp.Persistence
             services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepository<>));
             services.AddScoped(typeof(IMessageRepository), typeof(MessageRepository));
             services.AddScoped(typeof(IUserRepository), typeof(UserRepository));
+            services.AddScoped(typeof(IUserLikeRepository), typeof(UserLikeRepository));
 
             // Configure Token Service
             services.AddScoped(typeof(ITokenService), typeof(TokenService));

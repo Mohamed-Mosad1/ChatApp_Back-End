@@ -70,7 +70,7 @@ namespace ChatApp.Persistence.Repositories
                 throw new ArgumentException("File cannot be null", nameof(file));
             }
 
-            var userName = _httpContext.HttpContext?.User.Claims.FirstOrDefault(u => u.Type == ClaimTypes.GivenName)?.Value;
+            var userName = _httpContext.HttpContext?.User.FindFirstValue(ClaimTypes.GivenName);
             if (userName is not null)
             {
                 var user = await _userManager.FindByNameAsync(userName);
