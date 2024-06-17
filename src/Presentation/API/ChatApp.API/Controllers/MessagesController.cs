@@ -1,10 +1,9 @@
 ﻿using ChatApp.Application.Features.Messages.Command.AddMessage;
-using ChatApp.Application.Features.Messages.Query.GetAllMessages;
+using ChatApp.Application.Features.Messages.Command.GetMessagesIsRead;
 using ChatApp.Application.Features.Messages.Query.GetMessageForUser;
 using ChatApp.Application.Helpers;
 using ChatApp.Persistence.Extensions;
 using MediatR;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace ChatApp.API.Controllers
@@ -46,6 +45,24 @@ namespace ChatApp.API.Controllers
 
                 return BadRequest("Error while adding new message");
             }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+
+        [HttpGet("get-messages-is-read/{userName}")]
+        public async Task<ActionResult<IReadOnlyList<MessageDto>>> GetMessagesIsRead(string userName, CancellationToken cancellationToken)
+        {
+            try
+            {
+                var response = await _mediator.Send(new GetMessagesIsReadCommand(userName), cancellationToken);
+
+                if (response is not null)
+                    return Ok(response);
+
+                return NotFound();
+}
             catch (Exception ex)
             {
                 return BadRequest(ex.Message);

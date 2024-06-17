@@ -37,5 +37,35 @@ namespace ChatApp.Persistence.Repositories
 
             return await PagedList<MessageDto>.CreateAsync(messageQuery, messageParams.PageNumber, messageParams.PageSize);
         }
+
+        public async Task<IEnumerable<MessageDto>> GetMessagesIsReadAsync(string currentUserName, string recipientUserName)
+        {
+            var messages = _dbContext.Messages
+                .Include(x => x.Sender).ThenInclude(x => x.Photos)
+                .Include(x => x.Recipient).ThenInclude(x => x.Photos)
+                .AsNoTracking()
+                .Where(x => x.Recipient.UserName == currentUserName
+                    && x.Sender.UserName == recipientUserName || x.Recipient.UserName == recipientUserName
+                    && x.Sender.UserName == currentUserName)
+                .OrderByDescending(x => x.MessageSend)
+                .ProjectTo<MessageDto>(_mapper.ConfigurationProvider)
+                .ToList();
+
+            var unReadMessages = _dbContext.Messages
+                .Where(x => x.DateRead == null && x.Recipient.UserName == currentUserName)
+                .ToList();
+
+            if (unReadMessages.Any())
+            {
+                foreach (var item in unReadMessages)
+                {
+                    item.DateRead = DateTime.Now;
+                    _dbContext.Messages.Update(item);
+                    _dbContext.SaveChanges();
+                }
+            }
+
+            return _mapper.Map<IEnumerable<MessageDto>>(messages);
+        }
     }
 }
