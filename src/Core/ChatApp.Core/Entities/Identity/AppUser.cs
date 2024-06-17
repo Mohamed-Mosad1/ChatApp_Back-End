@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Identity;
+﻿using ChatApp.Core.Entities;
+using Microsoft.AspNetCore.Identity;
 
 namespace ChatApp.Domain.Entities.Identity
 {
@@ -15,9 +16,14 @@ namespace ChatApp.Domain.Entities.Identity
         public string? City { get; set; }
         public string? Country { get; set; }
         public ICollection<Photo> Photos { get; set; } = new HashSet<Photo>();
+
+        // Likes
         public ICollection<UserLike> LikeUser { get; set; } = new HashSet<UserLike>();
         public ICollection<UserLike> LikedByUser { get; set; } = new HashSet<UserLike>();
 
+        // Messages
+        public ICollection<Message> MessagesSent { get; set; } = new HashSet<Message>();
+        public ICollection<Message> MessagesReceived { get; set; } = new HashSet<Message>();
 
     }
 }

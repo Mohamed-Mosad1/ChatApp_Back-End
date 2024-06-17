@@ -1,4 +1,5 @@
 ﻿using ChatApp.Core.Common;
+using ChatApp.Domain.Entities.Identity;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -9,17 +10,24 @@ namespace ChatApp.Core.Entities
 {
     public class Message : BaseEntity
     {
-        public int SenderId { get; set; }
+        // Sender's details
+        public string? SenderId { get; set; }
         public string SenderUserName { get; set; } = null!;
+        public AppUser Sender { get; set; }
 
-        public int RecipientId { get; set; }
+        // Recipient's details
+        public string? RecipientId { get; set; }
         public string RecipientUserName { get; set; } = null!;
+        public AppUser Recipient { get; set; }
 
+        // Message content
         public string Content { get; set; } = null!;
 
-        public DateTime? DateRead { get; set; }
-        public DateTime MessageSend { get; set; } = DateTime.UtcNow;
+        // Timestamps
+        public DateTime? DateRead { get; set; } 
+        public DateTime MessageSend { get; set; } = DateTime.Now;
 
+        // Deletion flags
         public bool SenderDeleted { get; set; }
         public bool RecipientDeleted { get; set; }
     }

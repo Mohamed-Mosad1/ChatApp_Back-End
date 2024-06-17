@@ -17,9 +17,9 @@ namespace ChatApp.Persistence.Configurations.DataSeed
                 new Message
                 {
                     Id = 1,
-                    SenderId = 1,
+                    SenderId = "1",
                     SenderUserName = "Mohamed",
-                    RecipientId = 2,
+                    RecipientId = "2",
                     RecipientUserName = "Mosaad",
                     Content = "test-one",
                     DateRead = DateTime.UtcNow.AddDays(-1),
@@ -31,9 +31,9 @@ namespace ChatApp.Persistence.Configurations.DataSeed
                 new Message
                 {
                     Id = 2,
-                    SenderId = 2,
+                    SenderId = "2",
                     SenderUserName = "Khaled",
-                    RecipientId = 1,
+                    RecipientId = "1",
                     RecipientUserName = "Ahmed",
                     Content = "test-two",
                     DateRead = DateTime.UtcNow.AddDays(-3),
@@ -45,9 +45,9 @@ namespace ChatApp.Persistence.Configurations.DataSeed
                 new Message
                 {
                     Id = 3,
-                    SenderId = 2,
+                    SenderId = "2",
                     SenderUserName = "Hossam",
-                    RecipientId = 1,
+                    RecipientId = "1",
                     RecipientUserName = "Ali",
                     Content = "test-three",
                     DateRead = DateTime.UtcNow.AddDays(4),

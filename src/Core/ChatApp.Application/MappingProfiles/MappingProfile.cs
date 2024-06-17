@@ -4,6 +4,7 @@ using ChatApp.Application.Features.Accounts.Command.Register;
 using ChatApp.Application.Features.Accounts.Queries.GetAllUsers;
 using ChatApp.Application.Features.Messages.Command.AddMessage;
 using ChatApp.Application.Features.Messages.Query.GetAllMessages;
+using ChatApp.Application.Features.Messages.Query.GetMessageForUser;
 using ChatApp.Application.Helpers;
 using ChatApp.Core.Entities;
 using ChatApp.Domain.Entities.Identity;
@@ -35,6 +36,13 @@ namespace ChatApp.Application.MappingProfiles
 
             // Mapping AppUser with RegisterDto
             CreateMap<AppUser, RegisterDto>().ReverseMap();
+
+            // Mapping Message with MessageDto
+            CreateMap<Message, MessageDto>()
+                .ForMember(d => d.RecipientProfilePictureUrl, opt => opt.MapFrom(s => baseUrl + s.Recipient.Photos.FirstOrDefault(x => x.IsMain && x.IsActive).Url))
+                .ForMember(d => d.SenderProfilePictureUrl, opt => opt.MapFrom(s => baseUrl + s.Sender.Photos.FirstOrDefault(x => x.IsMain && x.IsActive).Url))
+                .ReverseMap();
+
 
         }
     }

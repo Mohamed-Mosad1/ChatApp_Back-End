@@ -1,5 +1,8 @@
 ﻿using ChatApp.Application.Features.Messages.Command.AddMessage;
 using ChatApp.Application.Features.Messages.Query.GetAllMessages;
+using ChatApp.Application.Features.Messages.Query.GetMessageForUser;
+using ChatApp.Application.Helpers;
+using ChatApp.Persistence.Extensions;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -15,26 +18,30 @@ namespace ChatApp.API.Controllers
             _mediator = mediator;
         }
 
-        [Authorize]
-        [HttpGet]
-        public async Task<ActionResult<MessageReturnDto>> GetAllMessages(CancellationToken cancellationToken)
+        [HttpGet("get-messages-for-user")]
+        public async Task<ActionResult<MessageDto>> GetMessageForUser([FromQuery] MessageParams messageParams, CancellationToken cancellationToken)
         {
-            var messages = await _mediator.Send(new GetAllMessagesQuery(), cancellationToken);
+            var messages = await _mediator.Send(new GetMessageForUserQuery(messageParams), cancellationToken);
 
-            return Ok(messages);
+            Response.AddPaginationHeader(messages.CurrentPage, messages.PageSize, messages.TotalCount, messages.TotalPages);
+
+            if(messages is not null)
+                return Ok(messages);
+            
+            return NotFound();
         }
 
-        [HttpPost]
-        public async Task<ActionResult<MessageReturnDto>> AddMessage([FromBody] AddMessageDto addMessageDto, CancellationToken cancellationToken)
+        [HttpPost("add-message")]
+        public async Task<ActionResult<MessageDto>> AddMessage([FromBody] AddMessageDto addMessageDto, CancellationToken cancellationToken)
         {
             try
             {
                 if (ModelState.IsValid)
                 {
                     var command = new AddMessageCommand(addMessageDto);
-                    var response = await _mediator.Send(command);
+                    var response = await _mediator.Send(command, cancellationToken);
 
-                    return Ok(response.IsSuccess ? Ok(response) : BadRequest(response.Message));
+                    return Ok(response.IsSuccess ? Ok(response.Data) : BadRequest(response.Message));
                 }
 
                 return BadRequest("Error while adding new message");
@@ -44,5 +51,6 @@ namespace ChatApp.API.Controllers
                 return BadRequest(ex.Message);
             }
         }
+
     }
 }
