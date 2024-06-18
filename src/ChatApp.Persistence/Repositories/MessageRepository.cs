@@ -1,6 +1,6 @@
 ﻿using AutoMapper;
 using AutoMapper.QueryableExtensions;
-using ChatApp.Application.Features.Messages.Query.GetMessageForUser;
+using ChatApp.Application.Features.Messages.Queries.GetMessageForUser;
 using ChatApp.Application.Helpers;
 using ChatApp.Application.Persistence.Contracts;
 using ChatApp.Core.Entities;

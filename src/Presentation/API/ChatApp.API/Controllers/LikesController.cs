@@ -1,5 +1,5 @@
 ﻿using ChatApp.Application.Features.Likes.Command.AddLike;
-using ChatApp.Application.Features.Likes.Query.GetLikedUsers;
+using ChatApp.Application.Features.Likes.Queries.GetLikedUsers;
 using ChatApp.Application.Helpers;
 using ChatApp.Persistence.Extensions;
 using MediatR;

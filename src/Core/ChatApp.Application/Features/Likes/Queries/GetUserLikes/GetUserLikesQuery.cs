@@ -5,7 +5,7 @@ using MediatR;
 using Microsoft.AspNetCore.Http;
 using System.Security.Claims;
 
-namespace ChatApp.Application.Features.Likes.Query.GetLikedUsers
+namespace ChatApp.Application.Features.Likes.Queries.GetLikedUsers
 {
     public class GetUserLikesQuery : IRequest<PagedList<LikeDto>>
     {

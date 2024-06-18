@@ -4,6 +4,13 @@
         <name>ChatApp.API</name>
     </assembly>
     <members>
+        <member name="M:ChatApp.API.Controllers.AccountsController.Login(ChatApp.Application.Features.Accounts.Command.Login.LoginDto)">
+            <summary>
+            Login with username and password to start chatting
+            </summary>
+            <param name="loginDto"></param>
+            <returns></returns>
+        </member>
         <member name="M:ChatApp.API.Controllers.AccountsController.Register(ChatApp.Application.Features.Accounts.Command.Register.RegisterDto)">
             <summary>
             Take Data From Body
@@ -49,6 +56,12 @@
             <remarks>
             URL => api/Accounts/set-main-photo/{photoId}
             </remarks>
+        </member>
+        <member name="M:ChatApp.API.Controllers.AdminController.GetUsersWithRoles">
+            <summary>
+            Only Admin can modify or view all users with roles
+            </summary>
+            <returns></returns>
         </member>
     </members>
 </doc>

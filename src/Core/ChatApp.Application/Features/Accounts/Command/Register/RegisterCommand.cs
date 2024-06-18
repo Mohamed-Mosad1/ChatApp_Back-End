@@ -3,6 +3,7 @@ using ChatApp.Application.Features.Accounts.Validators;
 using ChatApp.Application.Persistence.Contracts;
 using ChatApp.Application.Responses;
 using ChatApp.Domain.Entities.Identity;
+using FluentValidation;
 using MediatR;
 using Microsoft.AspNetCore.Identity;
 
@@ -36,54 +37,52 @@ namespace ChatApp.Application.Features.Accounts.Command.Register
 
             public async Task<BaseCommonResponse> Handle(RegisterCommand request, CancellationToken cancellationToken)
             {
-                BaseCommonResponse res = new BaseCommonResponse();
+                var response = new BaseCommonResponse();
 
-                try
+                var validator = new RegisterValidator();
+                var validationResult = await validator.ValidateAsync(request.RegisterDto, cancellationToken);
+                if (!validationResult.IsValid)
                 {
-                    var validator = new RegisterValidator();
-                    var validatorResult = await validator.ValidateAsync(request.RegisterDto, cancellationToken);
-                    if (!validatorResult.IsValid)
-                    {
-                        res.IsSuccess = false;
-                        res.Message = "While Validate Register Date";
-                        res.Errors = validatorResult.Errors.Select(x=>x.ErrorMessage).ToList();
-                        return res;
-                    }
-
-                    var user = _mapper.Map<RegisterDto, AppUser>(request.RegisterDto);
-
-                    var response = await _userManager.CreateAsync(user, request.RegisterDto.Password);
-                    if (!response.Succeeded)
-                    {
-                        foreach (var err in response.Errors)
-                           res.Errors.Add($"{err.Code} - {err.Description}");
-                        
-                        res.IsSuccess = false;
-                        res.Message = "BadRequest";
-                        return res;
-                    }
-
-                    res.IsSuccess = true;
-                    res.Message = "Register Success";
-                    res.Data = new
-                    {
-                        userName = user.UserName,
-                        knownAs = user.KnownAs,
-                        email = user.Email,
-                        gender = user.Gender,
-                        token = await _tokenService.CreateTokenAsync(user),
-                        photoUrl = user.Photos.FirstOrDefault(p=>p.IsMain)?.Url
-                    };
-
-                    return res;
+                    response.IsSuccess = false;
+                    response.Message = "Validation Failed";
+                    response.Errors = validationResult.Errors.Select(e => e.ErrorMessage).ToList();
+                    return response;
                 }
-                catch (Exception ex)
+
+                var user = _mapper.Map<RegisterDto, AppUser>(request.RegisterDto);
+
+                var identityResult = await _userManager.CreateAsync(user, request.RegisterDto.Password);
+                var roleResult = await _userManager.AddToRoleAsync(user, "Member");
+                if (!identityResult.Succeeded)
                 {
-                    res.IsSuccess = false;
-                    res.Message = ex.Message;
-
-                    return res;
+                    response.IsSuccess = false;
+                    response.Message = "User creation failed";
+                    response.Errors = identityResult.Errors.Select(e => $"{e.Code} - {e.Description}").ToList();
+                    return response;
                 }
+                
+                if (!roleResult.Succeeded)
+                {
+                    response.IsSuccess = false;
+                    response.Message = "User role failed to add";
+                    response.Errors = roleResult.Errors.Select(e => $"{e.Code} - {e.Description}").ToList();
+                    return response;
+                }
+
+                var token = await _tokenService.CreateTokenAsync(user);
+                response.IsSuccess = true;
+                response.Message = "Registration successful";
+                response.Data = new
+                {
+                    userName = user.UserName,
+                    knownAs = user.KnownAs,
+                    email = user.Email,
+                    gender = user.Gender,
+                    token,
+                    photoUrl = user.Photos.FirstOrDefault(p => p.IsMain)?.Url
+                };
+
+                return response;
             }
         }
 

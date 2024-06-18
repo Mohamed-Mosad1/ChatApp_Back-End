@@ -27,6 +27,11 @@ namespace ChatApp.API.Controllers
             _mediator = mediator;
         }
 
+        /// <summary>
+        /// Login with username and password to start chatting
+        /// </summary>
+        /// <param name="loginDto"></param>
+        /// <returns></returns>
         [AllowAnonymous]
         [HttpPost("Login")]
         public async Task<ActionResult<LoginDto>> Login([FromBody] LoginDto loginDto)
@@ -116,6 +121,7 @@ namespace ChatApp.API.Controllers
             }
         }
 
+        [Authorize(Roles = "Admin")]
         [HttpGet("get-all-users")]
         public async Task<ActionResult<IReadOnlyList<MemberDto>>> GetAllUsers([FromQuery] UserParams userParams, CancellationToken cancellationToken)
         {
@@ -136,6 +142,7 @@ namespace ChatApp.API.Controllers
             }
         }
 
+        [Authorize(Roles = "Member")]
         [HttpGet("get-user-by-userName/{userName}")]
         public async Task<ActionResult<MemberDto>> GetUserByUserName(string userName, CancellationToken cancellationToken)
         {

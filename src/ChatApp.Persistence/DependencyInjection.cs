@@ -3,7 +3,6 @@ using ChatApp.Domain.Entities.Identity;
 using ChatApp.Persistence.Configurations.DataSeed;
 using ChatApp.Persistence.DatabaseContext;
 using ChatApp.Persistence.Repositories;
-using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Identity;
@@ -11,7 +10,6 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
-using System.Security.Cryptography;
 using System.Text;
 
 namespace ChatApp.Persistence
@@ -56,6 +54,12 @@ namespace ChatApp.Persistence
                         ValidIssuer = configuration["JWT:Issuer"]
                     };
                 });
+
+            services.AddAuthorization(opt =>
+            {
+                opt.AddPolicy("RequireAdminRole", policy => policy.RequireRole("Admin"));
+                opt.AddPolicy("RequireAdminWithMemberRole", policy => policy.RequireRole("Admin", "Member"));
+            });
 
             return services;
         }

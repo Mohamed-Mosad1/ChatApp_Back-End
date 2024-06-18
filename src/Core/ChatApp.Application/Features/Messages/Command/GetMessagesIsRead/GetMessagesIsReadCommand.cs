@@ -1,13 +1,8 @@
-﻿using ChatApp.Application.Features.Messages.Query.GetMessageForUser;
+﻿using ChatApp.Application.Features.Messages.Queries.GetMessageForUser;
 using ChatApp.Application.Persistence.Contracts;
 using MediatR;
 using Microsoft.AspNetCore.Http;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Security.Claims;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace ChatApp.Application.Features.Messages.Command.GetMessagesIsRead
 {

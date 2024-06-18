@@ -1,5 +1,6 @@
 ﻿using ChatApp.Application.Persistence.Contracts;
 using ChatApp.Domain.Entities.Identity;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
@@ -11,11 +12,13 @@ namespace ChatApp.Persistence.Repositories
     public class TokenService : ITokenService
     {
         private readonly IConfiguration _configuration;
+        private readonly UserManager<AppUser> _userManager;
         private readonly SymmetricSecurityKey _symmetricSecurityKey;
 
-        public TokenService(IConfiguration configuration)
+        public TokenService(IConfiguration configuration, UserManager<AppUser> userManager)
         {
             _configuration = configuration;
+            _userManager = userManager;
             _symmetricSecurityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["JWT:Key"]));
         }
 
@@ -27,6 +30,10 @@ namespace ChatApp.Persistence.Repositories
                 new Claim(JwtRegisteredClaimNames.GivenName, user.UserName),
                 new Claim(JwtRegisteredClaimNames.NameId, user.Id)
             };
+
+            var roles = await _userManager.GetRolesAsync(user);
+
+            claim.AddRange(roles.Select(role => new Claim(ClaimTypes.Role, role)));
 
             var credentials = new SigningCredentials(_symmetricSecurityKey, SecurityAlgorithms.HmacSha256Signature);
 

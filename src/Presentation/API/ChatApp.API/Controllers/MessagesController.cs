@@ -1,7 +1,7 @@
 ﻿using ChatApp.Application.Features.Messages.Command.AddMessage;
 using ChatApp.Application.Features.Messages.Command.DeleteMessage;
 using ChatApp.Application.Features.Messages.Command.GetMessagesIsRead;
-using ChatApp.Application.Features.Messages.Query.GetMessageForUser;
+using ChatApp.Application.Features.Messages.Queries.GetMessageForUser;
 using ChatApp.Application.Helpers;
 using ChatApp.Persistence.Extensions;
 using MediatR;
