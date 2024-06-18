@@ -43,7 +43,6 @@ namespace ChatApp.Application.Features.Accounts.Command.Register
                 var validationResult = await validator.ValidateAsync(request.RegisterDto, cancellationToken);
                 if (!validationResult.IsValid)
                 {
-                    response.IsSuccess = false;
                     response.Message = "Validation Failed";
                     response.Errors = validationResult.Errors.Select(e => e.ErrorMessage).ToList();
                     return response;
@@ -55,7 +54,6 @@ namespace ChatApp.Application.Features.Accounts.Command.Register
                 var roleResult = await _userManager.AddToRoleAsync(user, "Member");
                 if (!identityResult.Succeeded)
                 {
-                    response.IsSuccess = false;
                     response.Message = "User creation failed";
                     response.Errors = identityResult.Errors.Select(e => $"{e.Code} - {e.Description}").ToList();
                     return response;
@@ -63,7 +61,6 @@ namespace ChatApp.Application.Features.Accounts.Command.Register
                 
                 if (!roleResult.Succeeded)
                 {
-                    response.IsSuccess = false;
                     response.Message = "User role failed to add";
                     response.Errors = roleResult.Errors.Select(e => $"{e.Code} - {e.Description}").ToList();
                     return response;

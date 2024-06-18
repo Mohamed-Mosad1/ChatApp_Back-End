@@ -31,26 +31,26 @@ namespace ChatApp.Application.Features.Likes.Command.AddLike
             {
                 var currentUserId = _httpContextAccessor.HttpContext?.User.FindFirstValue(ClaimTypes.NameIdentifier);
                 if (string.IsNullOrEmpty(currentUserId))
-                    return new BaseCommonResponse { IsSuccess = false, Message = "Current user not found." };
+                    return new BaseCommonResponse { Message = "Current user not found." };
 
                 var sourceUser = await _userManager.FindByIdAsync(currentUserId);
                 var destUser = await _userManager.FindByNameAsync(request.UserName);
 
                 if (sourceUser is null || destUser is null)
-                    return new BaseCommonResponse { IsSuccess = false, Message = "User not found." };
+                    return new BaseCommonResponse { Message = "User not found." };
 
                 if (sourceUser.Id == destUser.Id)
-                    return new BaseCommonResponse { IsSuccess = false, Message = "You cannot like yourself." };
+                    return new BaseCommonResponse { Message = "You cannot like yourself." };
 
                 if (await _userLikeRepository.GetUserLike(sourceUser.Id, destUser.Id) != null)
-                    return new BaseCommonResponse { IsSuccess = false, Message = "You already liked this user." };
+                    return new BaseCommonResponse { Message = "You already liked this user." };
 
 
                 var result = await _userLikeRepository.AddLike(destUser.Id, sourceUser.Id);
 
                 return result
                     ? new BaseCommonResponse { IsSuccess = true, Message = "Like added successfully." }
-                    : new BaseCommonResponse { IsSuccess = false, Message = "Failed to add like." };
+                    : new BaseCommonResponse { Message = "Failed to add like." };
             }
         }
     }

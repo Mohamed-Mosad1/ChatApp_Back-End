@@ -36,7 +36,6 @@ namespace ChatApp.Application.Features.Messages.Command.DeleteMessage
                     var message = await _messageRepository.GetMessageByIdAsync(request.Id);
                     if (message.Sender.UserName != userName && message.Recipient.UserName != userName)
                     {
-                        res.IsSuccess = false;
                         res.Message = "Unauthorized, You are not allowed to delete this message";
 
                         return res;

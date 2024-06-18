@@ -37,7 +37,7 @@ namespace ChatApp.Application.Features.Admin.Command.UpdateRoles
                 try
                 {
                     // Admin,Member,...
-                    var selectedRole = request.Roles?.Split(',').ToArray();
+                    var selectedRoles = request.Roles?.Split(',').ToArray();
 
                     var user = await _userManager.FindByNameAsync(request.UserName);
                     if (user is null)
@@ -49,21 +49,23 @@ namespace ChatApp.Application.Features.Admin.Command.UpdateRoles
                     }
 
                     var userRoles = await _userManager.GetRolesAsync(user);
-                    var result = await _userManager.AddToRolesAsync(user, selectedRole.Except(userRoles));
+                    var rolesToAdd = selectedRoles.Except(userRoles);
+                    var rolesToRemove = userRoles.Except(selectedRoles);
 
-                    if (!result.Succeeded)
+                    var addResult = await _userManager.AddToRolesAsync(user, rolesToAdd);
+                    if (!addResult.Succeeded)
                     {
                         response.Message = "Error while adding roles";
-                        response.Errors.Add("Failed to add roles");
+                        response.Errors.AddRange(addResult.Errors.Select(e => e.Description));
 
                         return response;
                     }
 
-                    result = await _userManager.RemoveFromRolesAsync(user, userRoles.Except(selectedRole));
-                    if (!result.Succeeded)
+                    var removeResult = await _userManager.RemoveFromRolesAsync(user, rolesToRemove);
+                    if (!removeResult.Succeeded)
                     {
                         response.Message = "Error while removing roles";
-                        response.Errors.Add("Failed to remove roles");
+                        response.Errors.AddRange(removeResult.Errors.Select(e => e.Description));
 
                         return response;
                     }
@@ -76,7 +78,7 @@ namespace ChatApp.Application.Features.Admin.Command.UpdateRoles
                 }
                 catch (Exception ex)
                 {
-                    response.Message = "Error while updating roles";
+                    response.Message = "An error occurred while updating roles";
                     response.Errors.Add(ex.Message);
 
                     return response;

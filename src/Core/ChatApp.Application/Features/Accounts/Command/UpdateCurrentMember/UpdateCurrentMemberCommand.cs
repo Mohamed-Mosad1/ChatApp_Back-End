@@ -60,7 +60,6 @@ namespace ChatApp.Application.Features.Accounts.Command.UpdateCurrentMember
                         }
                         else
                         {
-                            response.IsSuccess = false;
                             foreach (var err in res.Errors)
                             {
                                 response.Errors.Add($"Code: {err.Code} - Description: {err.Description}");
@@ -70,13 +69,11 @@ namespace ChatApp.Application.Features.Accounts.Command.UpdateCurrentMember
                         }
                     }
 
-                    response.IsSuccess = false;
                     response.Message = "User Name Invalid";
                     return response;
                 }
                 catch (Exception ex)
                 {
-                    response.IsSuccess = false;
                     response.Message = ex.Message;
                     return response;
                 }

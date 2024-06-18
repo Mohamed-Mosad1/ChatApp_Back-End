@@ -68,7 +68,6 @@ namespace ChatApp.Application.Features.Messages.Command.AddMessage
 
                 if (recipient is null)
                 {
-                    response.IsSuccess = false;
                     response.Message = "Recipient not found.";
                     return response;
                 }
@@ -76,7 +75,6 @@ namespace ChatApp.Application.Features.Messages.Command.AddMessage
                 // Prevent users from sending messages to themselves
                 if (message.SenderUserName.ToLower() == request.AddMessageDto.RecipientUserName.ToLower())
                 {
-                    response.IsSuccess = false;
                     response.Message = "You cannot send a message to yourself.";
                     return response;
                 }
@@ -94,7 +92,6 @@ namespace ChatApp.Application.Features.Messages.Command.AddMessage
                 }
                 catch (Exception ex)
                 {
-                    response.IsSuccess = false;
                     response.Message = $"An error occurred while adding the message: {ex.Message}";
                 }
 
@@ -109,7 +106,6 @@ namespace ChatApp.Application.Features.Messages.Command.AddMessage
 
                 if (!validationResult.IsValid)
                 {
-                    response.IsSuccess = false;
                     response.Message = "Validation errors occurred while adding a new message.";
                     response.Errors = validationResult.Errors.Select(e => e.ErrorMessage).ToList();
                 }

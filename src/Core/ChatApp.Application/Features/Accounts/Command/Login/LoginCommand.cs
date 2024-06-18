@@ -50,7 +50,6 @@ namespace ChatApp.Application.Features.Accounts.Command.Login
 
                     if (user == null)
                     {
-                        response.IsSuccess = false;
                         response.Message = "User not found";
                         return response;
                     }
@@ -72,7 +71,6 @@ namespace ChatApp.Application.Features.Accounts.Command.Login
                     }
                     else
                     {
-                        response.IsSuccess = false;
                         response.Message = "Unauthorized";
                     }
 
@@ -80,7 +78,6 @@ namespace ChatApp.Application.Features.Accounts.Command.Login
                 }
                 catch (Exception ex)
                 {
-                    response.IsSuccess = false;
                     response.Message = $"An error occurred: {ex.Message}";
                     return response;
                 }
