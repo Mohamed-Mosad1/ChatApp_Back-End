@@ -131,6 +131,8 @@ namespace ChatApp.Application.Features.Messages.Command.AddMessage
                 return new
                 {
                     Id = message.Id,
+                    DateRead = message.DateRead,
+                    MessageSend = message.MessageSend,
                     SenderId = message.SenderId,
                     SenderUserName = message.SenderUserName,
                     SenderProfilePictureUrl = _configuration["BaseApiUrl"] + sender.Photos?.FirstOrDefault(p => p.IsMain)?.Url,

@@ -1,4 +1,5 @@
 ﻿using ChatApp.Application.Features.Messages.Command.AddMessage;
+using ChatApp.Application.Features.Messages.Command.DeleteMessage;
 using ChatApp.Application.Features.Messages.Command.GetMessagesIsRead;
 using ChatApp.Application.Features.Messages.Query.GetMessageForUser;
 using ChatApp.Application.Helpers;
@@ -24,9 +25,9 @@ namespace ChatApp.API.Controllers
 
             Response.AddPaginationHeader(messages.CurrentPage, messages.PageSize, messages.TotalCount, messages.TotalPages);
 
-            if(messages is not null)
+            if (messages is not null)
                 return Ok(messages);
-            
+
             return NotFound();
         }
 
@@ -40,7 +41,7 @@ namespace ChatApp.API.Controllers
                     var command = new AddMessageCommand(addMessageDto);
                     var response = await _mediator.Send(command, cancellationToken);
 
-                    return Ok(response.IsSuccess ? Ok(response.Data) : BadRequest(response.Message));
+                    return response.IsSuccess ? Ok(response.Data) : BadRequest(response.Message);
                 }
 
                 return BadRequest("Error while adding new message");
@@ -51,7 +52,7 @@ namespace ChatApp.API.Controllers
             }
         }
 
-        [HttpGet("get-messages-is-read/{userName}")]
+        [HttpGet("mark-message-as-read/{userName}")]
         public async Task<ActionResult<IReadOnlyList<MessageDto>>> GetMessagesIsRead(string userName, CancellationToken cancellationToken)
         {
             try
@@ -62,12 +63,32 @@ namespace ChatApp.API.Controllers
                     return Ok(response);
 
                 return NotFound();
-}
+            }
             catch (Exception ex)
             {
                 return BadRequest(ex.Message);
             }
         }
 
+        [HttpDelete("delete-message/{id}")]
+        public async Task<ActionResult> DeleteMessage(int id)
+        {
+            try
+            {
+                var command = new DeleteMessageCommand(id);
+                var response = await _mediator.Send(command, CancellationToken.None);
+                if (response.IsSuccess == false && response.Message.Contains("Unauthorized"))
+                    return Unauthorized();
+
+                if (response.IsSuccess)
+                    return Ok(response);
+
+                return NotFound($"Message with ID {id} not found");
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
     }
 }
