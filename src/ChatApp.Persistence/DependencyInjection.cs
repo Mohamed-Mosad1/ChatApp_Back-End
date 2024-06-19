@@ -37,7 +37,10 @@ namespace ChatApp.Persistence
                 .AddEntityFrameworkStores<ApplicationDbContext>()
                 .AddDefaultTokenProviders();
 
+            // Configure Cache
             services.AddMemoryCache();
+
+            // Configure JWT Authentication
             services.AddAuthentication(opt =>
             {
                 opt.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
@@ -53,8 +56,24 @@ namespace ChatApp.Persistence
                         IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(configuration["JWT:Key"])),
                         ValidIssuer = configuration["JWT:Issuer"]
                     };
+
+                    opt.Events = new JwtBearerEvents()
+                    {
+                        OnMessageReceived = context =>
+                        {
+                            var accessToken = context.Request.Query["access_token"];
+                            var path = context.HttpContext.Request.Path;
+                            if (!string.IsNullOrEmpty(accessToken) && path.StartsWithSegments("/hubs"))
+                            {
+                                context.Token = accessToken;
+                            }
+
+                            return Task.CompletedTask;
+                        }
+                    };
                 });
 
+            // Configure Authorization
             services.AddAuthorization(opt =>
             {
                 opt.AddPolicy("RequireAdminRole", policy => policy.RequireRole("Admin"));

@@ -1,12 +1,11 @@
 using ChatApp.API.Extentions;
+using ChatApp.API.SignalR;
 using ChatApp.Application;
 using ChatApp.Domain.Entities.Identity;
 using ChatApp.Persistence;
 using ChatApp.Persistence.DatabaseContext;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.OpenApi.Models;
-using System.Reflection;
 
 namespace ChatApp.API
 {
@@ -26,6 +25,7 @@ namespace ChatApp.API
             // Configure External Project Services.
             builder.Services.ConfigureApplicationServices();
             builder.Services.ConfigurePersistenceServices(builder.Configuration);
+            builder.Services.AddSignalR();
 
             // Enable Cors
             builder.Services.AddCors(opt =>
@@ -36,6 +36,9 @@ namespace ChatApp.API
                           .AllowAnyHeader().AllowAnyMethod().AllowCredentials();
                 });
             });
+
+            // Configure PresenceTracker Services.
+            builder.Services.AddSingleton<PresenceTracker>();
 
             var app = builder.Build();
 
@@ -80,6 +83,8 @@ namespace ChatApp.API
             app.UseAuthorization();
 
             app.MapControllers();
+
+            app.MapHub<PresenceHub>("hubs/presence");
 
             app.ConfigureMiddleware();
 
