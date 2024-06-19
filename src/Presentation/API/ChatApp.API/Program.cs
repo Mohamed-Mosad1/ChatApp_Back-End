@@ -1,3 +1,4 @@
+using ChatApp.API.Extentions;
 using ChatApp.Application;
 using ChatApp.Domain.Entities.Identity;
 using ChatApp.Persistence;
@@ -19,34 +20,10 @@ namespace ChatApp.API
 
             builder.Services.AddControllers();
 
-            // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
-            builder.Services.AddEndpointsApiExplorer();
-            builder.Services.AddSwaggerGen(s =>
-            {
-                var securitySchema = new OpenApiSecurityScheme()
-                {
-                    Name = "Authorizathion",
-                    Description = "JWT Auth Bearer",
-                    In = ParameterLocation.Header,
-                    Type = SecuritySchemeType.Http,
-                    Scheme = "Bearer",
-                    Reference = new OpenApiReference()
-                    {
-                        Id = "Bearer",
-                        Type = ReferenceType.SecurityScheme
-                    }
-                };
-                s.AddSecurityDefinition("Bearer", securitySchema);
-                var securityRequirement = new OpenApiSecurityRequirement() { { securitySchema, new[] { "Bearer" } } };
-                s.AddSecurityRequirement(securityRequirement);
+            // Configure Swagger Services.
+            builder.Services.AddSwaggerServices();
 
-                // Configure XML
-                var xmlFile = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
-                var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
-                s.IncludeXmlComments(xmlPath);
-            });
-
-            // Configure External Project(dll)
+            // Configure External Project Services.
             builder.Services.ConfigureApplicationServices();
             builder.Services.ConfigurePersistenceServices(builder.Configuration);
 
@@ -90,8 +67,7 @@ namespace ChatApp.API
             // Configure the HTTP request pipeline.
             if (app.Environment.IsDevelopment())
             {
-                app.UseSwagger();
-                app.UseSwaggerUI();
+                app.UseSwaggerMiddleware();
             }
 
             app.UseHttpsRedirection();

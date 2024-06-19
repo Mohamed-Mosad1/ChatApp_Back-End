@@ -37,7 +37,7 @@ namespace ChatApp.Application.Features.Admin.Command.UpdateRoles
                 try
                 {
                     // Admin,Member,...
-                    var selectedRoles = request.Roles?.Split(',').ToArray();
+                    var selectedRoles = request.Roles.Split(',').ToArray();
 
                     var user = await _userManager.FindByNameAsync(request.UserName);
                     if (user is null)
