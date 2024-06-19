@@ -85,6 +85,7 @@ namespace ChatApp.API
             app.MapControllers();
 
             app.MapHub<PresenceHub>("hubs/presence");
+            app.MapHub<MessageHub>("hubs/message");
 
             app.ConfigureMiddleware();
 

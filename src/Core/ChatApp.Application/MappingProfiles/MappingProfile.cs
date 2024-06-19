@@ -43,6 +43,8 @@ namespace ChatApp.Application.MappingProfiles
                 .ForMember(d => d.SenderProfilePictureUrl, opt => opt.MapFrom(s => baseUrl + s.Sender.Photos.FirstOrDefault(x => x.IsMain && x.IsActive).Url))
                 .ReverseMap();
 
+            // Convert DateTime to Date
+            CreateMap<DateTime, DateTime>().ConvertUsing(d => DateTime.SpecifyKind(d, DateTimeKind.Utc));
 
         }
     }

@@ -61,7 +61,7 @@ namespace ChatApp.Persistence.Repositories
                 // Mark messages as read and save changes in a batch
                 foreach (var message in unReadMessages)
                 {
-                    message.DateRead = DateTime.Now;
+                    message.DateRead = DateTime.UtcNow;
                 }
                 _dbContext.Messages.UpdateRange(unReadMessages);
                 await _dbContext.SaveChangesAsync();
