@@ -217,7 +217,7 @@ namespace ChatApp.API.Controllers
                 var command = new UploadPhotoCommand() { PhotoFile = file };
                 var response = await _mediator.Send(command);
                 if (response is not null)
-                    return Ok("Photo Uploaded Successfully");
+                    return Ok(response);
 
                 return BadRequest("Unable to upload photo");
             }

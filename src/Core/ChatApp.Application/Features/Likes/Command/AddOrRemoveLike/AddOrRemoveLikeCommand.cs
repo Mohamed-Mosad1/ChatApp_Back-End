@@ -6,15 +6,15 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using System.Security.Claims;
 
-namespace ChatApp.Application.Features.Likes.Command.AddLike
+namespace ChatApp.Application.Features.Likes.Command.AddOrRemoveLike
 {
-    public class AddLikeCommand : IRequest<BaseCommonResponse>
+    public class AddOrRemoveLikeCommand : IRequest<BaseCommonResponse>
     {
         public string UserName { get; }
 
-        public AddLikeCommand(string userName) => UserName = userName;
+        public AddOrRemoveLikeCommand(string userName) => UserName = userName;
 
-        public class Handler : IRequestHandler<AddLikeCommand, BaseCommonResponse>
+        public class Handler : IRequestHandler<AddOrRemoveLikeCommand, BaseCommonResponse>
         {
             private readonly IUserLikeRepository _userLikeRepository;
             private readonly IHttpContextAccessor _httpContextAccessor;
@@ -27,7 +27,7 @@ namespace ChatApp.Application.Features.Likes.Command.AddLike
                 _userManager = userManager;
             }
 
-            public async Task<BaseCommonResponse> Handle(AddLikeCommand request, CancellationToken cancellationToken)
+            public async Task<BaseCommonResponse> Handle(AddOrRemoveLikeCommand request, CancellationToken cancellationToken)
             {
                 var currentUserId = _httpContextAccessor.HttpContext?.User.FindFirstValue(ClaimTypes.NameIdentifier);
                 if (string.IsNullOrEmpty(currentUserId))
@@ -42,14 +42,17 @@ namespace ChatApp.Application.Features.Likes.Command.AddLike
                 if (sourceUser.Id == destUser.Id)
                     return new BaseCommonResponse { Message = "You cannot like yourself." };
 
-                if (await _userLikeRepository.GetUserLike(sourceUser.Id, destUser.Id) != null)
-                    return new BaseCommonResponse { Message = "You already liked this user." };
+                if (await _userLikeRepository.GetUserLikeAsync(sourceUser.Id, destUser.Id) is not null)
+                {
+                    await _userLikeRepository.RemoveLikeAsync(sourceUser.Id, destUser.Id);
+                    return new BaseCommonResponse { IsSuccess = true, Message = "You have unliked " };
+                }
 
 
-                var result = await _userLikeRepository.AddLike(destUser.Id, sourceUser.Id);
+                var result = await _userLikeRepository.AddLikeAsync(destUser.Id, sourceUser.Id);
 
                 return result
-                    ? new BaseCommonResponse { IsSuccess = true, Message = "Like added successfully." }
+                    ? new BaseCommonResponse { IsSuccess = true, Message = "You have liked " }
                     : new BaseCommonResponse { Message = "Failed to add like." };
             }
         }

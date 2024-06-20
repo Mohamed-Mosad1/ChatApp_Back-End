@@ -31,7 +31,6 @@ namespace ChatApp.Application.Features.Accounts.Queries.GetAllUsers
                 try
                 {
                     var users = await _userRepository.GetAllMembersAsync(request.UserParams);
-                    //var mappedUsers = _mapper.Map<List<MemberDto>>(users);
 
                     return users;
                 }

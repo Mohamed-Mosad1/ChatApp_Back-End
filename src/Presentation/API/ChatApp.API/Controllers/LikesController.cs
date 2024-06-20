@@ -1,4 +1,4 @@
-﻿using ChatApp.Application.Features.Likes.Command.AddLike;
+﻿using ChatApp.Application.Features.Likes.Command.AddOrRemoveLike;
 using ChatApp.Application.Features.Likes.Queries.GetLikedUsers;
 using ChatApp.Application.Helpers;
 using ChatApp.Persistence.Extensions;
@@ -16,29 +16,6 @@ namespace ChatApp.API.Controllers
             _mediator = mediator;
         }
 
-        [HttpPost("add-like/{userName}")]
-        public async Task<ActionResult> AddLike(string userName, CancellationToken cancellationToken)
-        {
-            try
-            {
-                if (!string.IsNullOrEmpty(userName))
-                {
-                    var command = new AddLikeCommand(userName);
-                    var response = await _mediator.Send(command);
-                    if (response.IsSuccess)
-                    {
-                        return Ok(response);
-                    }
-
-                    return BadRequest(response.Message);
-                }
-                return NotFound(value: "User Name Not Found");
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(ex.Message);
-            }
-        }
 
         [HttpGet("get-liked-users")]
         public async Task<ActionResult<IReadOnlyList<LikeDto>>> GetUserLikes([FromQuery] LikesParams likesParams, CancellationToken cancellationToken)
@@ -60,6 +37,31 @@ namespace ChatApp.API.Controllers
                 return BadRequest(ex.Message);
             }
         }
+
+        [HttpPost("add-or-remove-like/{userName}")]
+        public async Task<ActionResult> AddOrRemoveLike(string userName, CancellationToken cancellationToken)
+        {
+            try
+            {
+                if (!string.IsNullOrEmpty(userName))
+                {
+                    var command = new AddOrRemoveLikeCommand(userName);
+                    var response = await _mediator.Send(command);
+                    if (response.IsSuccess)
+                    {
+                        return Ok(response);
+                    }
+
+                    return BadRequest(response.Message);
+                }
+                return NotFound(value: "User Name Not Found");
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+
 
     }
 }

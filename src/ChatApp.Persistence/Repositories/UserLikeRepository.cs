@@ -1,5 +1,5 @@
 ﻿using ChatApp.Application.Extensions;
-using ChatApp.Application.Features.Likes.Command.AddLike;
+using ChatApp.Application.Features.Likes.Command.AddOrRemoveLike;
 using ChatApp.Application.Helpers;
 using ChatApp.Application.Persistence.Contracts;
 using ChatApp.Domain.Entities;
@@ -21,12 +21,12 @@ namespace ChatApp.Persistence.Repositories
             _configuration = configuration;
         }
 
-        public async Task<UserLike?> GetUserLike(string sourceUserId, string likedUserId)
+        public async Task<UserLike?> GetUserLikeAsync(string sourceUserId, string likedUserId)
         {
             return await _dbContext.UserLikes.FindAsync(sourceUserId, likedUserId);
         }
 
-        public async Task<PagedList<LikeDto>> GetUserLikes(LikesParams likesParams)
+        public async Task<PagedList<LikeDto>> GetUserLikesAsync(LikesParams likesParams)
         {
             var users = _dbContext.Users.Include(u => u.Photos).OrderBy(u => u.UserName).AsQueryable();
             var userLikes = _dbContext.UserLikes.AsQueryable();
@@ -46,22 +46,23 @@ namespace ChatApp.Persistence.Repositories
             var likedUser = users.Select(u => new LikeDto()
             {
                 Id = u.Id,
+                UserName = u.UserName,
+                KnownAs = u.KnownAs,
                 Age = u.DateOfBirth.CalculateAge(),
                 City = u.City,
-                KnownAs = u.KnownAs,
+                IsLiked = _dbContext.UserLikes.Any(ul => ul.SourceUserId == likesParams.UserId && ul.LikedUserId == u.Id),
                 PhotoUrl = _configuration["BaseApiUrl"] + u.Photos.FirstOrDefault(p => p.IsMain && p.IsActive).Url,
-                UserName = u.UserName
             });
 
             return await PagedList<LikeDto>.CreateAsync(likedUser, likesParams.PageNumber, likesParams.PageSize);
         }
 
-        public async Task<AppUser?> GetUserWithLikes(string userId)
+        public async Task<AppUser?> GetUserWithLikesAsync(string userId)
         {
             return await _dbContext.Users.Include(u => u.LikeUser).FirstOrDefaultAsync(u => u.Id == userId);
         }
 
-        public async Task<bool> AddLike(string likedUserId, string sourceUserId)
+        public async Task<bool> AddLikeAsync(string likedUserId, string sourceUserId)
         {
             var userLike = new UserLike()
             {
@@ -73,6 +74,19 @@ namespace ChatApp.Persistence.Repositories
             await _dbContext.SaveChangesAsync();
 
             return true;
+        }
+
+        public async Task<bool> RemoveLikeAsync(string sourceUserId, string likedUserId)
+        {
+            var userLike = await _dbContext.UserLikes.FindAsync(sourceUserId, likedUserId);
+            if (userLike is not null)
+            {
+                _dbContext.UserLikes.Remove(userLike);
+                await _dbContext.SaveChangesAsync();
+                return true;
+            }
+
+            return false;
         }
     }
 }

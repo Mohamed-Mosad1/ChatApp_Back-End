@@ -1,4 +1,4 @@
-﻿using ChatApp.Application.Features.Likes.Command.AddLike;
+﻿using ChatApp.Application.Features.Likes.Command.AddOrRemoveLike;
 using ChatApp.Application.Helpers;
 using ChatApp.Application.Persistence.Contracts;
 using MediatR;
@@ -37,7 +37,7 @@ namespace ChatApp.Application.Features.Likes.Queries.GetLikedUsers
                 }
 
                 request.LikesParams.UserId = userId;
-                var userLikes = await _userLikeRepository.GetUserLikes(request.LikesParams);
+                var userLikes = await _userLikeRepository.GetUserLikesAsync(request.LikesParams);
 
                 return userLikes ?? new PagedList<LikeDto>(new List<LikeDto>(), 0, 1, request.LikesParams.PageSize);
             }
