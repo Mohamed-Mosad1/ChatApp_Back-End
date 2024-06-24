@@ -9,7 +9,7 @@ namespace ChatApp.Application.Persistence.Contracts
         Task<PagedList<MessageDto>> GetMessagesForUserAsync(MessageParams messageParams);
         Task<IEnumerable<MessageDto>> GetMessagesIsReadAsync(string currentUserName, string recipientUserName);
         Task DeleteMessageAsync(Message message);
-        Task<Message> GetMessageByIdAsync(int id);
+        Task<Message?> GetMessageByIdAsync(int id);
 
     }
 }

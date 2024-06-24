@@ -13,7 +13,7 @@ namespace ChatApp.Application.MappingProfiles
 {
     public class MappingProfile : Profile
     {
-        private const string baseUrl = "https://localhost:44364/";
+        private const string baseUrl = "https://localhost:44364/"; // "https://localhost:443647241/";
 
         public MappingProfile()
         {
@@ -44,7 +44,7 @@ namespace ChatApp.Application.MappingProfiles
                 .ReverseMap();
 
             // Convert DateTime to Date
-            CreateMap<DateTime, DateTime>().ConvertUsing(d => DateTime.SpecifyKind(d, DateTimeKind.Utc));
+            CreateMap<DateTime, DateTimeOffset>().ConvertUsing(d => new DateTimeOffset(DateTime.SpecifyKind(d, DateTimeKind.Utc)));
 
         }
     }

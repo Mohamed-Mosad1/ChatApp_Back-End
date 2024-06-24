@@ -17,7 +17,7 @@ namespace ChatApp.Application.Helpers
                 return;
 
             // Get the username from claims
-            var userName = resultContext.HttpContext.User.FindFirst(ClaimTypes.GivenName)?.Value;
+            var userName = resultContext.HttpContext.User.FindFirstValue(ClaimTypes.GivenName);
 
             if (string.IsNullOrEmpty(userName))
                 return;

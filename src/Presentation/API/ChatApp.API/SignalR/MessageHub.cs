@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using ChatApp.Application.Features.Messages.Command.AddMessage;
+using ChatApp.Application.Features.Messages.Queries.GetMessageForUser;
 using ChatApp.Application.Persistence.Contracts;
 using ChatApp.Core.Entities;
 using ChatApp.Domain.Entities.Identity;
@@ -7,7 +8,6 @@ using MediatR;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
-using Newtonsoft.Json;
 using System.Security.Claims;
 
 namespace ChatApp.API.SignalR
@@ -19,13 +19,15 @@ namespace ChatApp.API.SignalR
         private readonly IMediator _mediator;
         private readonly IMapper _mapper;
         private readonly UserManager<AppUser> _userManager;
+        private readonly PresenceTracker _presenceTracker;
 
         public MessageHub(
-            IMessageRepository messageRepository, 
+            IMessageRepository messageRepository,
             ILogger<MessageHub> logger,
             IMediator mediator,
             IMapper mapper,
-            UserManager<AppUser> userManager
+            UserManager<AppUser> userManager,
+            PresenceTracker presenceTracker
             )
         {
             _messageRepository = messageRepository;
@@ -33,43 +35,26 @@ namespace ChatApp.API.SignalR
             _mediator = mediator;
             _mapper = mapper;
             _userManager = userManager;
+            _presenceTracker = presenceTracker;
         }
 
         public override async Task OnConnectedAsync()
         {
-            try
+            var httpContext = Context.GetHttpContext();
+            var currentUserName = Context.User?.FindFirstValue(ClaimTypes.GivenName);
+            var otherUserName = httpContext?.Request.Query["user"].ToString();
+
+            if (string.IsNullOrEmpty(currentUserName) || string.IsNullOrEmpty(otherUserName))
             {
-                var currentUserName = Context.User?.FindFirstValue(ClaimTypes.GivenName);
-                if (string.IsNullOrEmpty(currentUserName))
-                {
-                    _logger.LogWarning("User connected without a valid username.");
-                    Context.Abort();
-                    return;
-                }
-
-                var httpContext = Context.GetHttpContext();
-                var otherUser = httpContext?.Request.Query["user"].ToString();
-
-                if (string.IsNullOrEmpty(otherUser))
-                {
-                    _logger.LogWarning("User connected without specifying the other user.");
-                    Context.Abort();
-                    return;
-                }
-
-                var groupName = GetGroupName(currentUserName, otherUser);
-
-                await Groups.AddToGroupAsync(Context.ConnectionId, groupName);
-
-                var messages = await _messageRepository.GetMessagesIsReadAsync(currentUserName, otherUser);
-                await Clients.Group(groupName).SendAsync("ReceiveMessageRead", messages);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error occurred during OnConnectedAsync.");
-                throw;
+                Context.Abort();
+                return;
             }
 
+            var groupName = GetGroupName(currentUserName, otherUserName);
+            await Groups.AddToGroupAsync(Context.ConnectionId, groupName);
+
+            var messages = await _messageRepository.GetMessagesIsReadAsync(currentUserName, otherUserName);
+            await Clients.Group(groupName).SendAsync("ReceiveMessageRead", messages);
         }
 
         private string GetGroupName(string caller, string other)
@@ -81,24 +66,39 @@ namespace ChatApp.API.SignalR
 
         // Send Message
         public async Task SendMessage(AddMessageDto addMessageDto)
-        {   
+        {
+            var senderUserName = Context.User?.FindFirstValue(ClaimTypes.GivenName);
+            if (string.IsNullOrEmpty(senderUserName))
+            {
+                throw new HubException("Sender not authenticated");
+            }
+
+            var sender = await _userManager.Users
+                .Include(x => x.Photos)
+                .FirstOrDefaultAsync(x => x.UserName == senderUserName);
+
+            var recipient = await _userManager.Users
+                .Include(x => x.Photos)
+                .FirstOrDefaultAsync(x => x.UserName == addMessageDto.RecipientUserName);
+
+            if (recipient == null || sender == null)
+            {
+                throw new HubException("Invalid recipient or sender");
+            }
+
             var message = _mapper.Map<Message>(addMessageDto);
+            message.SenderId = sender.Id;
+            message.SenderUserName = senderUserName;
+            message.RecipientId = recipient.Id;
 
-            message.SenderId = Context.User?.FindFirstValue(ClaimTypes.NameIdentifier);
-            message.SenderUserName = Context.User.FindFirstValue(ClaimTypes.GivenName);
-
-            var recipient = await _userManager.Users.Include(x => x.Photos).FirstOrDefaultAsync(x => x.UserName == message.RecipientUserName);
-            var sender = await _userManager.Users.Include(x => x.Photos).FirstOrDefaultAsync(x => x.UserName == message.SenderUserName);
-            
-            message.RecipientId = recipient?.Id;
             await _messageRepository.AddAsync(message);
-            var caller = sender?.UserName;
-            var other = recipient?.UserName;
 
-            var groupName = GetGroupName(caller, other);
+            //var messageDto = _mapper.Map<MessageDto>(message);
+
+            var groupName = GetGroupName(sender.UserName, recipient.UserName);
             await Clients.Group(groupName).SendAsync("NewMessage", message);
-            
         }
+
 
         public override Task OnDisconnectedAsync(Exception? exception)
         {

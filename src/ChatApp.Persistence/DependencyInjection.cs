@@ -11,6 +11,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
+using System.Threading.Tasks;
 
 namespace ChatApp.Persistence
 {
@@ -23,57 +24,57 @@ namespace ChatApp.Persistence
                 opt.UseSqlServer(configuration.GetConnectionString("DefaultConnection"));
             });
 
-            // Configure
+            // Configure repositories
             services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepository<>));
-            services.AddScoped(typeof(IMessageRepository), typeof(MessageRepository));
-            services.AddScoped(typeof(IUserRepository), typeof(UserRepository));
-            services.AddScoped(typeof(IUserLikeRepository), typeof(UserLikeRepository));
+            services.AddScoped<IMessageRepository, MessageRepository>();
+            services.AddScoped<IUserRepository, UserRepository>();
+            services.AddScoped<IUserLikeRepository, UserLikeRepository>();
 
-            // Configure Token Service
-            services.AddScoped(typeof(ITokenService), typeof(TokenService));
+            // Configure token service
+            services.AddScoped<ITokenService, TokenService>();
 
-            // Configure Identity
+            // Configure identity
             services.AddIdentity<AppUser, IdentityRole>()
                 .AddEntityFrameworkStores<ApplicationDbContext>()
                 .AddDefaultTokenProviders();
 
-            // Configure Cache
+            // Configure memory cache
             services.AddMemoryCache();
 
-            // Configure JWT Authentication
+            // Configure JWT authentication
             services.AddAuthentication(opt =>
             {
-                opt.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
                 opt.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+                opt.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
             })
-                .AddJwtBearer(opt =>
+            .AddJwtBearer(opt =>
+            {
+                opt.TokenValidationParameters = new TokenValidationParameters
                 {
-                    opt.TokenValidationParameters = new TokenValidationParameters()
-                    {
-                        ValidateIssuer = true,
-                        ValidateAudience = false,
-                        ValidateIssuerSigningKey = true,
-                        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(configuration["JWT:Key"])),
-                        ValidIssuer = configuration["JWT:Issuer"]
-                    };
+                    ValidateIssuer = true,
+                    ValidateAudience = false,
+                    ValidateIssuerSigningKey = true,
+                    IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(configuration["JWT:Key"])),
+                    ValidIssuer = configuration["JWT:Issuer"]
+                };
 
-                    opt.Events = new JwtBearerEvents()
+                opt.Events = new JwtBearerEvents
+                {
+                    OnMessageReceived = context =>
                     {
-                        OnMessageReceived = context =>
+                        var accessToken = context.Request.Query["access_token"];
+                        var path = context.HttpContext.Request.Path;
+                        if (!string.IsNullOrEmpty(accessToken) && path.StartsWithSegments("/hubs"))
                         {
-                            var accessToken = context.Request.Query["access_token"];
-                            var path = context.HttpContext.Request.Path;
-                            if (!string.IsNullOrEmpty(accessToken) && path.StartsWithSegments("/hubs"))
-                            {
-                                context.Token = accessToken;
-                            }
-
-                            return Task.CompletedTask;
+                            context.Token = accessToken;
                         }
-                    };
-                });
 
-            // Configure Authorization
+                        return Task.CompletedTask;
+                    }
+                };
+            });
+
+            // Configure authorization policies
             services.AddAuthorization(opt =>
             {
                 opt.AddPolicy("RequireAdminRole", policy => policy.RequireRole("Admin"));
@@ -85,14 +86,11 @@ namespace ChatApp.Persistence
 
         public static async void ConfigureMiddleware(this IApplicationBuilder app)
         {
-            using (var scope = app.ApplicationServices.CreateScope())
-            {
-                var userManger = scope.ServiceProvider.GetRequiredService<UserManager<AppUser>>();
-                var roleManger = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole>>();
-                
-                await IdentitySeed.SeedUserAsync(userManger, roleManger);
-            }
-        }
+            using var scope = app.ApplicationServices.CreateScope();
+            var userManager = scope.ServiceProvider.GetRequiredService<UserManager<AppUser>>();
+            var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole>>();
 
+            await IdentitySeed.SeedUserAsync(userManager, roleManager);
+        }
     }
 }

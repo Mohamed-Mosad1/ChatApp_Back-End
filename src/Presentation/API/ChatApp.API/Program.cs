@@ -6,6 +6,7 @@ using ChatApp.Persistence;
 using ChatApp.Persistence.DatabaseContext;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using System.Text.Json.Serialization;
 
 namespace ChatApp.API
 {
@@ -19,13 +20,22 @@ namespace ChatApp.API
 
             builder.Services.AddControllers();
 
+
             // Configure Swagger Services.
             builder.Services.AddSwaggerServices();
 
             // Configure External Project Services.
             builder.Services.ConfigureApplicationServices();
             builder.Services.ConfigurePersistenceServices(builder.Configuration);
-            builder.Services.AddSignalR();
+
+            // Add SignalR
+            builder.Services.AddSignalR(options =>
+            {
+                options.EnableDetailedErrors = true;
+            }).AddJsonProtocol(options =>
+            {
+                options.PayloadSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles;
+            });
 
             // Enable Cors
             builder.Services.AddCors(opt =>
@@ -84,8 +94,8 @@ namespace ChatApp.API
 
             app.MapControllers();
 
-            app.MapHub<PresenceHub>("hubs/presence");
-            app.MapHub<MessageHub>("hubs/message");
+            app.MapHub<PresenceHub>("/hubs/presence");
+            app.MapHub<MessageHub>("/hubs/message");
 
             app.ConfigureMiddleware();
 

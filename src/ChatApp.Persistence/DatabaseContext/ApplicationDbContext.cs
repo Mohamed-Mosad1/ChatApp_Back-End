@@ -26,7 +26,7 @@ namespace ChatApp.Persistence.DatabaseContext
             foreach (var entry in ChangeTracker.Entries<BaseEntity>())
             {
                 if(entry.State == EntityState.Modified)
-                    entry.Entity.ModifiedDate = DateTime.UtcNow;
+                    entry.Entity.ModifiedDate = DateTime.Now;
             }
 
             return base.SaveChangesAsync(cancellationToken);

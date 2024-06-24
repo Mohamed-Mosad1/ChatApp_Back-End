@@ -74,7 +74,7 @@ namespace ChatApp.Persistence.Migrations
 
                     b.HasIndex("SenderId");
 
-                    b.ToTable("Messages");
+                    b.ToTable("Messages", (string)null);
 
                     b.HasData(
                         new
@@ -251,7 +251,7 @@ namespace ChatApp.Persistence.Migrations
 
                     b.HasIndex("AppUserId");
 
-                    b.ToTable("Photos");
+                    b.ToTable("Photos", (string)null);
 
                     b.HasData(
                         new
@@ -304,7 +304,7 @@ namespace ChatApp.Persistence.Migrations
 
                     b.HasIndex("LikedUserId");
 
-                    b.ToTable("UserLikes");
+                    b.ToTable("UserLikes", (string)null);
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRole", b =>

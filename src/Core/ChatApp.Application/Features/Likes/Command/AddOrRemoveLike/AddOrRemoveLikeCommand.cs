@@ -45,14 +45,14 @@ namespace ChatApp.Application.Features.Likes.Command.AddOrRemoveLike
                 if (await _userLikeRepository.GetUserLikeAsync(sourceUser.Id, destUser.Id) is not null)
                 {
                     await _userLikeRepository.RemoveLikeAsync(sourceUser.Id, destUser.Id);
-                    return new BaseCommonResponse { IsSuccess = true, Message = "You have unliked " };
+                    return new BaseCommonResponse { IsSuccess = true, Message = "You have unliked ", Data = new { LikedUserName = destUser.UserName } };
                 }
 
 
                 var result = await _userLikeRepository.AddLikeAsync(destUser.Id, sourceUser.Id);
 
                 return result
-                    ? new BaseCommonResponse { IsSuccess = true, Message = "You have liked " }
+                    ? new BaseCommonResponse { IsSuccess = true, Message = "You have liked ", Data = new { LikedUserName = destUser.UserName } }
                     : new BaseCommonResponse { Message = "Failed to add like." };
             }
         }

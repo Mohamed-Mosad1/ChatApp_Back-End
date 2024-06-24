@@ -36,5 +36,11 @@ namespace ChatApp.API.SignalR
             var onlineUsers = OnlineUsers.Keys.OrderBy(k => k).ToArray();
             return Task.FromResult(onlineUsers);
         }
+
+        public Task<bool> IsUserOnline(string userName)
+        {
+            var isOnline = OnlineUsers.ContainsKey(userName);
+            return Task.FromResult(isOnline);
+        }
     }
 }

@@ -22,9 +22,9 @@ namespace ChatApp.Persistence.Repositories
 
         public async Task<PagedList<MessageDto>> GetMessagesForUserAsync(MessageParams messageParams)
         {
-            IQueryable<Message> query = _dbContext.Messages
-                .AsNoTracking()
-                .OrderByDescending(x => x.MessageSend);
+            var query = _dbContext.Messages/*.Include(x => x.Sender).Include(x => x.Recipient)*/
+                //.AsNoTracking()
+                .OrderByDescending(x => x.MessageSend).AsQueryable();
 
             query = messageParams.Container switch
             {
@@ -40,35 +40,33 @@ namespace ChatApp.Persistence.Repositories
 
         public async Task<IEnumerable<MessageDto>> GetMessagesIsReadAsync(string currentUserName, string recipientUserName)
         {
-            // Retrieve messages asynchronously
+            // Retrieve messages asynchronously with necessary includes
             var messages = await _dbContext.Messages
                 .Include(x => x.Sender).ThenInclude(x => x.Photos)
                 .Include(x => x.Recipient).ThenInclude(x => x.Photos)
-                .AsNoTracking()
-                .Where(x => (x.Recipient.UserName == currentUserName && x.Sender.UserName == recipientUserName && x.RecipientDeleted == false)
-                         || (x.Recipient.UserName == recipientUserName && x.Sender.UserName == currentUserName && x.SenderDeleted == false))
-                .OrderByDescending(x => x.MessageSend)
-                .ProjectTo<MessageDto>(_mapper.ConfigurationProvider)
+                .Where(x => (x.Recipient.UserName == currentUserName && !x.RecipientDeleted && x.Sender.UserName == recipientUserName && !x.SenderDeleted) ||
+                            (x.Recipient.UserName == recipientUserName && !x.RecipientDeleted && x.Sender.UserName == currentUserName && !x.SenderDeleted))
+                .OrderBy(x => x.MessageSend)
                 .ToListAsync();
 
             // Retrieve unread messages for the current user
-            var unReadMessages = await _dbContext.Messages
-                .Where(x => x.DateRead == null && x.Recipient.UserName == currentUserName)
-                .ToListAsync();
+            var unreadMessages = messages.Where(x => x.DateRead == null && x.Recipient.UserName == currentUserName).ToList();
 
-            if (unReadMessages.Any())
+            if (unreadMessages.Any())
             {
-                // Mark messages as read and save changes in a batch
-                foreach (var message in unReadMessages)
+                // Mark messages as read
+                foreach (var message in unreadMessages)
                 {
-                    message.DateRead = DateTime.UtcNow;
+                    message.DateRead = DateTime.Now;
                 }
-                _dbContext.Messages.UpdateRange(unReadMessages);
+                // Save changes in a batch
                 await _dbContext.SaveChangesAsync();
             }
 
-            return messages;
+            return _mapper.Map<IEnumerable<MessageDto>>(messages);
         }
+
+
 
         public async Task DeleteMessageAsync(Message message)
         {
@@ -76,12 +74,12 @@ namespace ChatApp.Persistence.Repositories
             await _dbContext.SaveChangesAsync();
         }
 
-        public async Task<Message> GetMessageByIdAsync(int id)
+        public async Task<Message?> GetMessageByIdAsync(int id)
         {
             var message = await _dbContext.Messages
-                .Include(x => x.Sender).ThenInclude(x => x.Photos)
-                .Include(x => x.Recipient).ThenInclude(x => x.Photos)
-                .AsNoTracking()
+                .Include(x => x.Sender)
+                .Include(x => x.Recipient)
+                //.AsNoTracking()
                 .FirstOrDefaultAsync(x => x.Id == id);
 
             return message;

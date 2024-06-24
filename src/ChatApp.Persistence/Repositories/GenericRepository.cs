@@ -21,6 +21,7 @@ namespace ChatApp.Persistence.Repositories
         public async Task AddAsync(T entity)
         {
             await _dbContext.AddAsync(entity);
+            await _dbContext.SaveChangesAsync();
         }
 
         public async Task DeleteByIdAsync(int id)
