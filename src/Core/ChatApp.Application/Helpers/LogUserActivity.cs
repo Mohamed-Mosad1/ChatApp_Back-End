@@ -1,4 +1,5 @@
-﻿using ChatApp.Application.Persistence.Contracts;
+﻿using ChatApp.Application.Attributes;
+using ChatApp.Application.Persistence.Contracts;
 using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.Extensions.DependencyInjection;
 using System.Security.Claims;
@@ -9,6 +10,16 @@ namespace ChatApp.Application.Helpers
     {
         public async Task OnActionExecutionAsync(ActionExecutingContext context, ActionExecutionDelegate next)
         {
+            // Check for a custom attribute or condition to skip logging
+            var skipLogging = context.ActionDescriptor.EndpointMetadata
+                               .OfType<SkipLoggingAttribute>()
+                               .Any();
+
+            if (skipLogging)
+            {
+                return;
+            }
+
             // Proceed with the action execution
             var resultContext = await next();
 

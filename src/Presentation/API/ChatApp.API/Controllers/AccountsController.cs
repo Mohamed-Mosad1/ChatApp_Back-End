@@ -1,7 +1,10 @@
-﻿using ChatApp.Application.Features.Accounts.Command.CheckUserNameOrEmailExist;
+﻿using ChatApp.Application.Attributes;
+using ChatApp.Application.Features.Accounts.Command.CheckUserNameOrEmailExist;
 using ChatApp.Application.Features.Accounts.Command.Login;
 using ChatApp.Application.Features.Accounts.Command.Register;
 using ChatApp.Application.Features.Accounts.Command.RemovePhoto;
+using ChatApp.Application.Features.Accounts.Command.ResetPassword;
+using ChatApp.Application.Features.Accounts.Command.SendResetPasswordEmail;
 using ChatApp.Application.Features.Accounts.Command.SetMainPhoto;
 using ChatApp.Application.Features.Accounts.Command.UpdateCurrentMember;
 using ChatApp.Application.Features.Accounts.Command.UploadPhoto;
@@ -9,6 +12,7 @@ using ChatApp.Application.Features.Accounts.Queries.GetAllUsers;
 using ChatApp.Application.Features.Accounts.Queries.GetCurrentUser;
 using ChatApp.Application.Features.Accounts.Queries.GetUserByUserId;
 using ChatApp.Application.Features.Accounts.Queries.GetUserByUserName;
+using ChatApp.Application.Responses;
 using ChatApp.Domain.Entities.Identity;
 using ChatApp.Persistence.Extensions;
 using ChatApp.Persistence.Helpers;
@@ -47,8 +51,8 @@ namespace ChatApp.API.Controllers
             return response.IsSuccess switch
             {
                 true => Ok(response.Data),
-                false when response.Message == "UnAuthorized" => Unauthorized(),
-                false when response.Message == "NotFound" => NotFound(),
+                false when response.Message == "Unauthorized" => Unauthorized(),
+                false when response.Message == "User Not Found" => NotFound(),
                 _ => BadRequest(response.Message)
             };
         }
@@ -81,9 +85,35 @@ namespace ChatApp.API.Controllers
             return response.IsSuccess switch
             {
                 true => Ok(response.Data),
-                false when response.Errors != null => BadRequest(new { Errors = response.Errors }),
+                false when response.Errors != null => BadRequest(new { Message = response.Message, Errors = response.Errors }),
                 _ => BadRequest("An unknown error occurred.")
             };
+        }
+
+        [SkipLogging]
+        [AllowAnonymous]
+        [HttpPost("send-reset-password-email/{email}")]
+        public async Task<ActionResult<BaseCommonResponse>> SendResetPasswordEmail(string email)
+        {
+            var command = new SendResetPasswordEmailCommand(email);
+            var response = await _mediator.Send(command);
+            if (response.IsSuccess)
+                return Ok(response.Message);
+
+            return NotFound(response.Message);
+        }
+
+        [SkipLogging]
+        [AllowAnonymous]
+        [HttpPost("reset-password")]
+        public async Task<ActionResult<BaseCommonResponse>> ResetPassword([FromBody] ResetPasswordDto resetPasswordDto)
+        {
+            var command = new ResetPasswordCommand(resetPasswordDto);
+            var response = await _mediator.Send(command);
+            if (response.IsSuccess)
+                return Ok(response.Message);
+
+            return BadRequest(response.Message);
         }
 
         [HttpGet("get-current-user")]
@@ -186,7 +216,7 @@ namespace ChatApp.API.Controllers
             {
                 var command = new UpdateCurrentMemberCommand(updateCurrentMemberDto);
                 var response = await _mediator.Send(command);
-                if (response.IsSuccess) 
+                if (response.IsSuccess)
                     return Ok(response.Data);
 
                 return BadRequest(response.Errors);
@@ -266,7 +296,7 @@ namespace ChatApp.API.Controllers
         {
             try
             {
-                if(photoId > 0)
+                if (photoId > 0)
                 {
                     var command = new SetMainPhotoCommand(photoId);
                     var response = await _mediator.Send(command);

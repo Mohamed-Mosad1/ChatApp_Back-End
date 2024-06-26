@@ -52,6 +52,11 @@ namespace ChatApp.Persistence.Repositories
             return await _userManager.Users.Include(u => u.Photos).FirstOrDefaultAsync(u => u.UserName == userName);
         }
 
+        public async Task<AppUser?> GetUserByEmailAsync(string email)
+        {
+            return await _userManager.Users.Include(u => u.Photos).FirstOrDefaultAsync(u => u.Email == email);
+        }
+
         public async Task UpdateUserAsync(AppUser user)
         {
             var result = await _userManager.UpdateAsync(user);

@@ -93,8 +93,6 @@ namespace ChatApp.API.SignalR
 
             await _messageRepository.AddAsync(message);
 
-            //var messageDto = _mapper.Map<MessageDto>(message);
-
             var groupName = GetGroupName(sender.UserName, recipient.UserName);
             await Clients.Group(groupName).SendAsync("NewMessage", message);
         }
