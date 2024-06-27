@@ -47,7 +47,8 @@ namespace ChatApp.Application.Features.Messages.Command.DeleteMessage
                     if (message.Recipient.UserName == userName)
                         message.RecipientDeleted = true;
 
-                    await _messageRepository.UpdateAsync(message);
+                     _messageRepository.Update(message);
+                    await _messageRepository.SaveAllAsync();
 
                     if (message.SenderDeleted && message.RecipientDeleted)
                         await _messageRepository.DeleteMessageAsync(message);

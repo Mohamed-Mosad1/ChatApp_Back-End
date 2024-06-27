@@ -1,11 +1,6 @@
 ﻿using ChatApp.Application.Persistence.Contracts;
 using ChatApp.Persistence.DatabaseContext;
 using Microsoft.EntityFrameworkCore;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace ChatApp.Persistence.Repositories
 {
@@ -44,10 +39,15 @@ namespace ChatApp.Persistence.Repositories
             return await _dbContext.Set<T>().FindAsync(id);
         }
 
-        public async Task UpdateAsync(T entity)
+        public void Update(T entity)
         {
-            _dbContext.Entry(entity).State = EntityState.Modified;
-            await _dbContext.SaveChangesAsync();
+            _dbContext.Set<T>().Update(entity);
+            //await _dbContext.SaveChangesAsync();
+        }
+
+        public async Task<bool> SaveAllAsync()
+        {
+            return await _dbContext.SaveChangesAsync() > 0;
         }
     }
 }

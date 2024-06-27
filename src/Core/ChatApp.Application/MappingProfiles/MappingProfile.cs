@@ -24,14 +24,14 @@ namespace ChatApp.Application.MappingProfiles
 
             // Mapping User with Photos
             CreateMap<AppUser, MemberDto>()
-                .ForMember(d => d.PhotoUrl, opt => opt.MapFrom(s=>baseUrl + s.Photos.FirstOrDefault(x=>x.IsMain).Url))
+                .ForMember(d => d.PhotoUrl, opt => opt.MapFrom(s => baseUrl + s.Photos.FirstOrDefault(x => x.IsMain).Url))
                 //.ForMember(d => d.PhotoUrl, opt => opt.MapFrom<PhotoMemberResolver>())
                 .ForMember(d => d.Age, opt => opt.MapFrom(s => s.DateOfBirth.CalculateAge()))
                 .ReverseMap();
 
             // Mapping Photo with PhotoDto
             CreateMap<Photo, PhotoDto>()
-                .ForMember(d=>d.Url, opt=>opt.MapFrom<UserPhotoResolver>())
+                .ForMember(d => d.Url, opt => opt.MapFrom<UserPhotoResolver>())
                 .ReverseMap();
 
             // Mapping AppUser with RegisterDto

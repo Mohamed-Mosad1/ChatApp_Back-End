@@ -34,9 +34,9 @@ namespace ChatApp.Application.Features.Accounts.Queries.GetAllUsers
 
                     return users;
                 }
-                catch (Exception)
+                catch (Exception ex)
                 {
-                    throw;
+                    throw new Exception(ex.Message);
                 }
             }
         }

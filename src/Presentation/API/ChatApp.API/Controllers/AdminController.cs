@@ -25,10 +25,10 @@ namespace ChatApp.API.Controllers
         {
             var query = new GetUsersWithRolesQuery();
             var response = await _mediator.Send(query);
-            
+
             if (response is not null)
-               return Ok(response);
-            
+                return Ok(response);
+
             return NotFound();
         }
 
@@ -39,7 +39,7 @@ namespace ChatApp.API.Controllers
             var response = await _mediator.Send(command, CancellationToken.None);
             if (response.IsSuccess)
                 return Ok(response);
-            
+
             return BadRequest(response.Message);
         }
 

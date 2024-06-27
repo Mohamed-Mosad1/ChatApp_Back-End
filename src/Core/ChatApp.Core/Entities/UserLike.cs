@@ -7,6 +7,6 @@ namespace ChatApp.Domain.Entities
         public string SourceUserId { get; set; }
         public AppUser SourceUser { get; set; }
         public string LikedUserId { get; set; }
-        public AppUser LikedUser { get; set; } 
+        public AppUser LikedUser { get; set; }
     }
 }

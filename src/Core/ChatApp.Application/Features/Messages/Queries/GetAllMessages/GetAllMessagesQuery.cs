@@ -11,7 +11,7 @@ namespace ChatApp.Application.Features.Messages.Queries.GetAllMessages
             private readonly IMessageRepository _messageRepository;
             private readonly IMapper _mapper;
 
-            public Handler( IMessageRepository messageRepository, IMapper mapper)
+            public Handler(IMessageRepository messageRepository, IMapper mapper)
             {
                 _messageRepository = messageRepository;
                 _mapper = mapper;
@@ -23,7 +23,7 @@ namespace ChatApp.Application.Features.Messages.Queries.GetAllMessages
                 {
                     var allMessage = await _messageRepository.GetAllAsync();
                     var mappedMessage = _mapper.Map<List<MessageReturnDto>>(allMessage);
-                    
+
                     return mappedMessage;
                 }
                 catch (Exception)

@@ -3,7 +3,6 @@ using ChatApp.Application.Features.Accounts.Validators;
 using ChatApp.Application.Persistence.Contracts;
 using ChatApp.Application.Responses;
 using ChatApp.Domain.Entities.Identity;
-using FluentValidation;
 using MediatR;
 using Microsoft.AspNetCore.Identity;
 
@@ -58,7 +57,7 @@ namespace ChatApp.Application.Features.Accounts.Command.Register
                     response.Errors = identityResult.Errors.Select(e => $"{e.Code} - {e.Description}").ToList();
                     return response;
                 }
-                
+
                 if (!roleResult.Succeeded)
                 {
                     response.Message = "User role failed to add";

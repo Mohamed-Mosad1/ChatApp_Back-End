@@ -2,11 +2,6 @@
 using ChatApp.Domain.Entities.Identity;
 using MediatR;
 using Microsoft.AspNetCore.Identity;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace ChatApp.Application.Features.Accounts.Command.SetMainPhoto
 {
@@ -36,7 +31,7 @@ namespace ChatApp.Application.Features.Accounts.Command.SetMainPhoto
                     if (request.Id > 0)
                     {
                         var result = await _userRepository.SetMainPhotoAsync(request.Id);
-                        if(result)
+                        if (result)
                             return true;
                     }
 

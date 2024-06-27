@@ -6,30 +6,46 @@ namespace ChatApp.API.SignalR
     {
         private static readonly ConcurrentDictionary<string, List<string>> OnlineUsers = new ConcurrentDictionary<string, List<string>>();
 
-        public Task ConnectedUser(string userName, string connectionId)
+        public Task<bool> ConnectedUser(string userName, string connectionId)
         {
             OnlineUsers.AddOrUpdate(userName, new List<string> { connectionId }, (key, existingList) =>
             {
-                existingList.Add(connectionId);
+                lock (existingList)
+                {
+                    if (!existingList.Contains(connectionId))
+                    {
+                        existingList.Add(connectionId);
+                    }
+                }
                 return existingList;
             });
 
-            return Task.CompletedTask;
+            return Task.FromResult(true);
         }
 
-        public Task DisconnectedUser(string userName, string connectionId)
+
+        public Task<bool> DisconnectedUser(string userName, string connectionId)
         {
+            bool isOffline = false;
             if (OnlineUsers.TryGetValue(userName, out var connections))
             {
-                connections.Remove(connectionId);
-                if (connections.Count == 0)
+                lock (connections)
                 {
-                    OnlineUsers.TryRemove(userName, out _);
+                    if (!connections.Contains(connectionId))
+                        return Task.FromResult(isOffline);
+
+                    connections.Remove(connectionId);
+                    if (connections.Count == 0)
+                    {
+                        OnlineUsers.TryRemove(userName, out _);
+                        isOffline = true;
+                    }
                 }
             }
 
-            return Task.CompletedTask;
+            return Task.FromResult(isOffline);
         }
+
 
         public Task<string[]> GetOnlineUsers()
         {
@@ -37,10 +53,17 @@ namespace ChatApp.API.SignalR
             return Task.FromResult(onlineUsers);
         }
 
-        public Task<bool> IsUserOnline(string userName)
+        public Task<List<string>> GetConnectionsForUser(string userName)
         {
-            var isOnline = OnlineUsers.ContainsKey(userName);
-            return Task.FromResult(isOnline);
+            List<string> connectionIds = new List<string>();
+
+            lock (OnlineUsers)
+            {
+                connectionIds = OnlineUsers.GetValueOrDefault(userName);
+            }
+
+            return Task.FromResult(connectionIds);
         }
+
     }
 }

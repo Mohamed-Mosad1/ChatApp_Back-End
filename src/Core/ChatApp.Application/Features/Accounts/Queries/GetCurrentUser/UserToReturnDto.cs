@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace ChatApp.Application.Features.Accounts.Queries.GetCurrentUser
+﻿namespace ChatApp.Application.Features.Accounts.Queries.GetCurrentUser
 {
     public class UserToReturnDto
     {

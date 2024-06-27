@@ -1,4 +1,6 @@
-﻿namespace ChatApp.Application.Features.Messages.Queries.GetMessageForUser
+﻿using System.Text.Json.Serialization;
+
+namespace ChatApp.Application.Features.Messages.Queries.GetMessageForUser
 {
     public class MessageDto
     {
@@ -19,7 +21,11 @@
 
         // Timestamps
         public DateTime? DateRead { get; set; }
-        public DateTime MessageSend { get; set; } 
+        public DateTime MessageSend { get; set; }
 
+        [JsonIgnore]
+        public bool SenderDeleted { get; set; }
+        [JsonIgnore]
+        public bool RecipientDeleted { get; set; }
     }
 }

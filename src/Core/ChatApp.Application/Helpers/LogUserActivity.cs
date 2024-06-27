@@ -17,6 +17,7 @@ namespace ChatApp.Application.Helpers
 
             if (skipLogging)
             {
+                await next();
                 return;
             }
 

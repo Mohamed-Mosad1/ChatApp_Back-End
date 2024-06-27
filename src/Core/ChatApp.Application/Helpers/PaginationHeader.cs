@@ -1,6 +1,6 @@
 ﻿namespace ChatApp.Persistence.Helpers
 {
-    public class PaginationHeader 
+    public class PaginationHeader
     {
         public PaginationHeader(int currentPage, int itemsPerPage, int totalItems, int totalPages)
         {

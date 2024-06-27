@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace ChatApp.Application.Features.Accounts.Command.ResetPassword
+﻿namespace ChatApp.Application.Features.Accounts.Command.ResetPassword
 {
     public record class ResetPasswordDto
     {

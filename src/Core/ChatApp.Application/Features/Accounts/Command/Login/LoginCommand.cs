@@ -46,7 +46,7 @@ namespace ChatApp.Application.Features.Accounts.Command.Login
 
                 try
                 {
-                    var user = await _userManager.Users.Include(x=>x.Photos).FirstOrDefaultAsync(x=>x.UserName == request.LoginDto.UserName);
+                    var user = await _userManager.Users.Include(x => x.Photos).FirstOrDefaultAsync(x => x.UserName == request.LoginDto.UserNameOrEmail || x.Email == request.LoginDto.UserNameOrEmail);
 
                     if (user == null)
                     {

@@ -1,10 +1,5 @@
 ﻿using ChatApp.Core.Common;
 using ChatApp.Domain.Entities.Identity;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace ChatApp.Core.Entities
 {
@@ -24,7 +19,7 @@ namespace ChatApp.Core.Entities
         public string Content { get; set; } = null!;
 
         // Timestamps
-        public DateTime? DateRead { get; set; } 
+        public DateTime? DateRead { get; set; }
         public DateTime MessageSend { get; set; } = DateTime.Now;
 
         // Deletion flags

@@ -18,14 +18,14 @@ namespace ChatApp.Persistence.DatabaseContext
         {
             base.OnModelCreating(modelBuilder);
             modelBuilder.ApplyConfigurationsFromAssembly(Assembly.GetExecutingAssembly());
-            
+
         }
 
         public override Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
         {
             foreach (var entry in ChangeTracker.Entries<BaseEntity>())
             {
-                if(entry.State == EntityState.Modified)
+                if (entry.State == EntityState.Modified)
                     entry.Entity.ModifiedDate = DateTime.Now;
             }
 
@@ -35,5 +35,7 @@ namespace ChatApp.Persistence.DatabaseContext
         public DbSet<Message> Messages { get; set; }
         public DbSet<Photo> Photos { get; set; }
         public DbSet<UserLike> UserLikes { get; set; }
+        public DbSet<Group> Groups { get; set; }
+        public DbSet<Connection> Connections { get; set; }
     }
 }

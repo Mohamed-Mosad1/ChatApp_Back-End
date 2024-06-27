@@ -16,7 +16,7 @@ namespace ChatApp.Application.Helpers
 
         public string Resolve(AppUser source, MemberDto destination, string destMember, ResolutionContext context)
         {
-            return _configuration["BaseApiUrl"] + source.Photos.FirstOrDefault(p=>p.IsMain && p.IsActive)?.Url;
+            return _configuration["BaseApiUrl"] + source.Photos.FirstOrDefault(p => p.IsMain && p.IsActive)?.Url;
 
         }
     }

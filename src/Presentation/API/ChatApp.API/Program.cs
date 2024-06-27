@@ -6,7 +6,6 @@ using ChatApp.Persistence;
 using ChatApp.Persistence.DatabaseContext;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
-using System.Text.Json.Serialization;
 
 namespace ChatApp.API
 {
@@ -17,7 +16,6 @@ namespace ChatApp.API
             var builder = WebApplication.CreateBuilder(args);
 
             // Add services to the container.
-
             builder.Services.AddControllers();
 
 
@@ -32,10 +30,11 @@ namespace ChatApp.API
             builder.Services.AddSignalR(options =>
             {
                 options.EnableDetailedErrors = true;
-            }).AddJsonProtocol(options =>
-            {
-                options.PayloadSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles;
             });
+            //    .AddJsonProtocol(options =>
+            //{
+            //    options.PayloadSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles;
+            //});
 
             // Enable Cors
             builder.Services.AddCors(opt =>

@@ -1,10 +1,5 @@
 ﻿using ChatApp.Domain.Entities.Identity;
 using Microsoft.AspNetCore.Identity;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace ChatApp.Persistence.Configurations.DataSeed
 {
@@ -47,7 +42,7 @@ namespace ChatApp.Persistence.Configurations.DataSeed
                 await userManager.AddToRoleAsync(user, "Admin");
             }
 
-            
+
         }
     }
 }

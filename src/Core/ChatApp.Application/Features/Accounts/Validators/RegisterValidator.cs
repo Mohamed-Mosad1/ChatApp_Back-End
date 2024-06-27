@@ -31,7 +31,7 @@ namespace ChatApp.Application.Features.Accounts.Validators
             RuleFor(x => x.Gender)
                 .NotNull().WithMessage("Gender is required")
                 .NotEmpty().WithMessage("Gender is required")
-                .Must(gender => gender == "Male".ToLower() || gender == "Female".ToLower())
+                .Must(gender => gender == "Male" || gender == "Female")
                 .WithMessage("Gender must be either Male or Female");
 
             RuleFor(x => x.City)

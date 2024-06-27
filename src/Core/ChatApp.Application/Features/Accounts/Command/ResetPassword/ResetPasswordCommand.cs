@@ -3,11 +3,6 @@ using ChatApp.Application.Responses;
 using ChatApp.Domain.Entities.Identity;
 using MediatR;
 using Microsoft.AspNetCore.Identity;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace ChatApp.Application.Features.Accounts.Command.ResetPassword
 {
@@ -51,7 +46,7 @@ namespace ChatApp.Application.Features.Accounts.Command.ResetPassword
 
                         return response;
                     }
-                    
+
                     if (!resetPasswordResult.Succeeded)
                     {
                         response.Message = "Password reset failed";
@@ -63,7 +58,7 @@ namespace ChatApp.Application.Features.Accounts.Command.ResetPassword
 
                     response.IsSuccess = true;
                     response.Message = "Password Reset Successfully";
-                    
+
                     return response;
                 }
                 catch (Exception ex)
@@ -73,7 +68,7 @@ namespace ChatApp.Application.Features.Accounts.Command.ResetPassword
                     return response;
                 }
             }
-                
+
         }
     }
 }

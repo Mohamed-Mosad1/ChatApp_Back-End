@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace ChatApp.Core.Common
+﻿namespace ChatApp.Core.Common
 {
     public abstract class BaseEntity
     {

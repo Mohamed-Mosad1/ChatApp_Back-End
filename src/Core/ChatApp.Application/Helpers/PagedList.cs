@@ -14,14 +14,14 @@ namespace ChatApp.Application.Helpers
             CurrentPage = currentPage;
             PageSize = pageSize;
             TotalCount = totalCount;
-            TotalPages = (int) Math.Ceiling(totalCount / (double) pageSize);
+            TotalPages = (int)Math.Ceiling(totalCount / (double)pageSize);
             AddRange(items);
         }
 
         public static async Task<PagedList<T>> CreateAsync(IQueryable<T> source, int pageNumber, int pageSize)
         {
             var count = await source.CountAsync();
-            var items = await source.Skip((pageNumber -1) * pageSize).Take(pageSize).ToListAsync();
+            var items = await source.Skip((pageNumber - 1) * pageSize).Take(pageSize).ToListAsync();
 
             return new PagedList<T>(items, count, pageNumber, pageSize);
         }

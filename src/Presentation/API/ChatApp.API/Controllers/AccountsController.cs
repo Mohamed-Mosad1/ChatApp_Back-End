@@ -137,95 +137,60 @@ namespace ChatApp.API.Controllers
         [HttpGet("check-userName-or-email-exist/{searchTerm}")]
         public async Task<ActionResult<bool>> CheckUserNameOrEmailExist(string searchTerm, CancellationToken cancellationToken)
         {
-            try
-            {
-                var result = await _mediator.Send(new CheckUserNameOrEmailExistQuery(searchTerm), cancellationToken);
-                if (result)
-                    return Ok(result);
+            var result = await _mediator.Send(new CheckUserNameOrEmailExistQuery(searchTerm), cancellationToken);
+            if (result)
+                return Ok(result);
 
-                return NotFound(false);
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(ex.Message);
-            }
+            return NotFound(false);
         }
 
         [HttpGet("get-all-users")]
         public async Task<ActionResult<IReadOnlyList<MemberDto>>> GetAllUsers([FromQuery] UserParams userParams, CancellationToken cancellationToken)
         {
-            try
+            var users = await _mediator.Send(new GetAllUsersQuery(userParams), cancellationToken);
+            if (users is not null)
             {
-                var users = await _mediator.Send(new GetAllUsersQuery(userParams), cancellationToken);
-                if (users is not null)
-                {
-                    Response.AddPaginationHeader(users.CurrentPage, users.PageSize, users.TotalCount, users.TotalPages);
-                    return Ok(users);
-                }
+                Response.AddPaginationHeader(users.CurrentPage, users.PageSize, users.TotalCount, users.TotalPages);
+                return Ok(users);
+            }
 
-                return NotFound();
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(ex.Message);
-            }
+            return NotFound();
         }
 
         [HttpGet("get-user-by-userName/{userName}")]
         public async Task<ActionResult<MemberDto>> GetUserByUserName(string userName, CancellationToken cancellationToken)
         {
-            try
+            if (string.IsNullOrEmpty(userName))
             {
-                if (string.IsNullOrEmpty(userName))
-                {
-                    return NotFound();
-                }
+                return NotFound();
+            }
 
-                var user = await _mediator.Send(new GetUserByUserNameQuery(userName), cancellationToken);
-                return user is not null ? Ok(user) : NotFound();
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(ex.Message);
-            }
+            var user = await _mediator.Send(new GetUserByUserNameQuery(userName), cancellationToken);
+            return user is not null ? Ok(user) : NotFound();
         }
 
         [HttpGet("get-user-by-Id/{userId}")]
         public async Task<ActionResult<MemberDto>> GetUserByUserId(string userId, CancellationToken cancellationToken)
         {
-            try
+            if (string.IsNullOrEmpty(userId))
             {
-                if (string.IsNullOrEmpty(userId))
-                {
-                    return NotFound();
-                }
+                return NotFound();
+            }
 
-                var user = await _mediator.Send(new GetUserByUserIdQuery(userId), cancellationToken);
-                return user is not null ? Ok(user) : NotFound();
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(ex.Message);
-            }
+            var user = await _mediator.Send(new GetUserByUserIdQuery(userId), cancellationToken);
+            return user is not null ? Ok(user) : NotFound();
         }
 
         [HttpPut("update-current-member")]
         public async Task<ActionResult<UpdateCurrentMemberDto>> UpdateCurrentMember([FromBody] UpdateCurrentMemberDto updateCurrentMemberDto)
         {
-            try
-            {
-                var command = new UpdateCurrentMemberCommand(updateCurrentMemberDto);
-                var response = await _mediator.Send(command);
-                if (response.IsSuccess)
-                    return Ok(response.Data);
+            var command = new UpdateCurrentMemberCommand(updateCurrentMemberDto);
+            var response = await _mediator.Send(command);
+            if (response.IsSuccess)
+                return Ok(response.Data);
 
-                return BadRequest(response.Errors);
+            return BadRequest(response.Errors);
 
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(ex.Message);
-            }
         }
 
         /// <summary>
