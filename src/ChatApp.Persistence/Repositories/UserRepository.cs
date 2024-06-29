@@ -90,7 +90,6 @@ namespace ChatApp.Persistence.Repositories
                     };
 
                     await _dbContext.Photos.AddAsync(photo);
-                    await _dbContext.SaveChangesAsync();
 
                     var mappedPhoto = _mapper.Map<PhotoDto>(photo);
 

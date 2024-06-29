@@ -1,5 +1,6 @@
 ﻿using ChatApp.Application.Features.Admin.Command.UpdateRoles;
 using ChatApp.Application.Features.Admin.Queries.GetUsersWithRoles;
+using ChatApp.Application.Helpers;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -21,6 +22,7 @@ namespace ChatApp.API.Controllers
         /// <returns></returns>
         [Authorize(Policy = "RequireAdminRole")]
         [HttpGet("get-users-with-roles")]
+        [Cached(600)]
         public async Task<ActionResult<IReadOnlyList<UsersWithRolesDto>>> GetUsersWithRoles()
         {
             var query = new GetUsersWithRolesQuery();

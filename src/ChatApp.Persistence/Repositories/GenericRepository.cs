@@ -49,5 +49,10 @@ namespace ChatApp.Persistence.Repositories
         {
             return await _dbContext.SaveChangesAsync() > 0;
         }
+
+        public bool HasChanges()
+        {
+            return _dbContext.ChangeTracker.HasChanges();
+        }
     }
 }

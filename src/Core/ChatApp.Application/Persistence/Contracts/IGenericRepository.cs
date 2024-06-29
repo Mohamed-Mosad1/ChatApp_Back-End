@@ -8,6 +8,6 @@
         Task AddAsync(T entity);
         void Update(T entity);
         Task<bool> SaveAllAsync();
-
+        bool HasChanges();
     }
 }

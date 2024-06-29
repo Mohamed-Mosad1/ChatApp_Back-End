@@ -53,7 +53,7 @@ namespace ChatApp.API.SignalR
             return Task.FromResult(onlineUsers);
         }
 
-        public Task<List<string>> GetConnectionsForUser(string userName)
+        public static Task<List<string>> GetConnectionsForUser(string userName)
         {
             List<string> connectionIds = new List<string>();
 

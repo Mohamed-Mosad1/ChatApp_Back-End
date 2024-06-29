@@ -1,5 +1,4 @@
-﻿using ChatApp.Application.Attributes;
-using ChatApp.Application.Features.Accounts.Command.CheckUserNameOrEmailExist;
+﻿using ChatApp.Application.Features.Accounts.Command.CheckUserNameOrEmailExist;
 using ChatApp.Application.Features.Accounts.Command.Login;
 using ChatApp.Application.Features.Accounts.Command.Register;
 using ChatApp.Application.Features.Accounts.Command.RemovePhoto;
@@ -12,6 +11,7 @@ using ChatApp.Application.Features.Accounts.Queries.GetAllUsers;
 using ChatApp.Application.Features.Accounts.Queries.GetCurrentUser;
 using ChatApp.Application.Features.Accounts.Queries.GetUserByUserId;
 using ChatApp.Application.Features.Accounts.Queries.GetUserByUserName;
+using ChatApp.Application.Helpers;
 using ChatApp.Application.Responses;
 using ChatApp.Domain.Entities.Identity;
 using ChatApp.Persistence.Extensions;
@@ -90,7 +90,6 @@ namespace ChatApp.API.Controllers
             };
         }
 
-        [SkipLogging]
         [AllowAnonymous]
         [HttpPost("send-reset-password-email/{email}")]
         public async Task<ActionResult<BaseCommonResponse>> SendResetPasswordEmail(string email)
@@ -103,7 +102,6 @@ namespace ChatApp.API.Controllers
             return NotFound(response.Message);
         }
 
-        [SkipLogging]
         [AllowAnonymous]
         [HttpPost("reset-password")]
         public async Task<ActionResult<BaseCommonResponse>> ResetPassword([FromBody] ResetPasswordDto resetPasswordDto)
@@ -116,6 +114,7 @@ namespace ChatApp.API.Controllers
             return BadRequest(response.Message);
         }
 
+        [Cached(600)]
         [HttpGet("get-current-user")]
         public async Task<ActionResult<UserToReturnDto>> GetCurrentUser(CancellationToken cancellationToken)
         {
@@ -132,7 +131,6 @@ namespace ChatApp.API.Controllers
                 return BadRequest(ex.Message);
             }
         }
-
 
         [HttpGet("check-userName-or-email-exist/{searchTerm}")]
         public async Task<ActionResult<bool>> CheckUserNameOrEmailExist(string searchTerm, CancellationToken cancellationToken)

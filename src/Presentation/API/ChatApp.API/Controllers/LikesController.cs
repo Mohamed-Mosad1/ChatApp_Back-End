@@ -16,7 +16,7 @@ namespace ChatApp.API.Controllers
             _mediator = mediator;
         }
 
-
+        [Cached(600)]
         [HttpGet("get-liked-users")]
         public async Task<ActionResult<IReadOnlyList<LikeDto>>> GetUserLikes([FromQuery] LikesParams likesParams, CancellationToken cancellationToken)
         {

@@ -25,28 +25,28 @@ namespace ChatApp.Persistence.Repositories
         {
             var query = _dbContext.Messages
                 .OrderByDescending(x => x.MessageSend)
-                .ProjectTo<MessageDto>(_mapper.ConfigurationProvider)
                 .AsQueryable();
 
             query = messageParams.Container switch
             {
                 "Inbox" => query.Where(x => x.RecipientUserName == messageParams.UserName && x.RecipientDeleted == false),
-                "Outbox" => query.Where(x => x.RecipientUserName == messageParams.UserName && x.SenderDeleted == false),
+                "Outbox" => query.Where(x => x.SenderUserName == messageParams.UserName && x.SenderDeleted == false),
                 _ => query.Where(x => x.RecipientUserName == messageParams.UserName && x.RecipientDeleted == false && x.DateRead == null),
             };
 
-            return await PagedList<MessageDto>.CreateAsync(query, messageParams.PageNumber, messageParams.PageSize);
+            var messages = query.ProjectTo<MessageDto>(_mapper.ConfigurationProvider);
+
+            return await PagedList<MessageDto>.CreateAsync(messages, messageParams.PageNumber, messageParams.PageSize);
         }
 
         public async Task<IEnumerable<MessageDto>> GetMessagesIsReadAsync(string currentUserName, string recipientUserName)
         {
             // Retrieve messages asynchronously with necessary includes
-            var messages = await _dbContext.Messages
+            var messages =  _dbContext.Messages
                     .Where(x => (x.Recipient.UserName == currentUserName && !x.RecipientDeleted && x.Sender.UserName == recipientUserName && !x.SenderDeleted) ||
                         (x.Recipient.UserName == recipientUserName && !x.RecipientDeleted && x.Sender.UserName == currentUserName && !x.SenderDeleted))
                     .OrderBy(x => x.MessageSend)
-                    .ProjectTo<MessageDto>(_mapper.ConfigurationProvider)
-                    .ToListAsync();
+                    .AsQueryable();
 
             // Retrieve unread messages for the current user
             var unreadMessages = messages
@@ -60,11 +60,9 @@ namespace ChatApp.Persistence.Repositories
                     message.DateRead = DateTime.Now;
                 }
 
-                // Save changes in a batch
-                //await _dbContext.SaveChangesAsync();
             }
 
-            return messages;
+            return await messages.ProjectTo<MessageDto>(_mapper.ConfigurationProvider).ToListAsync();
         }
 
 

@@ -1,5 +1,4 @@
-﻿using ChatApp.Application.Helpers;
-using ChatApp.Application.MappingProfiles;
+﻿using ChatApp.Application.MappingProfiles;
 using MediatR;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -14,8 +13,6 @@ namespace ChatApp.Application
 
             // Configure MediatR
             services.AddMediatR(AppDomain.CurrentDomain.GetAssemblies());
-
-            services.AddScoped(typeof(LogUserActivity));
 
             return services;
         }

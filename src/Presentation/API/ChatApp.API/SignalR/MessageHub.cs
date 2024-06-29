@@ -4,32 +4,31 @@ using ChatApp.Application.Features.Messages.Queries.GetMessageForUser;
 using ChatApp.Application.Persistence.Contracts;
 using ChatApp.Core.Entities;
 using ChatApp.Domain.Entities;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.SignalR;
 using System.Security.Claims;
 
 namespace ChatApp.API.SignalR
 {
+    [Authorize]
     public class MessageHub : Hub
     {
         private readonly IMessageRepository _messageRepository;
         private readonly IMapper _mapper;
         private readonly IUserRepository _userRepository;
         private readonly IHubContext<PresenceHub> _presenceHub;
-        private readonly PresenceTracker _presenceTracker;
 
         public MessageHub(
             IMessageRepository messageRepository,
             IMapper mapper,
             IUserRepository userRepository,
-            IHubContext<PresenceHub> presenceHub,
-            PresenceTracker presenceTracker
+            IHubContext<PresenceHub> presenceHub
             )
         {
             _messageRepository = messageRepository;
             _mapper = mapper;
             _userRepository = userRepository;
             _presenceHub = presenceHub;
-            _presenceTracker = presenceTracker;
         }
 
         public override async Task OnConnectedAsync()
@@ -45,6 +44,12 @@ namespace ChatApp.API.SignalR
             await Clients.Group(groupName).SendAsync("UpdatedGroup", group);
 
             var messages = await _messageRepository.GetMessagesIsReadAsync(currentUserName, otherUserName);
+
+            var changes = _messageRepository.HasChanges();
+
+            if (_messageRepository.HasChanges()) 
+                await _messageRepository.SaveAllAsync();
+
             await Clients.Caller.SendAsync("ReceiveMessageRead", messages);
         }
 
@@ -88,7 +93,7 @@ namespace ChatApp.API.SignalR
             }
             else
             {
-                var connections = await _presenceTracker.GetConnectionsForUser(recipient.UserName);
+                var connections = await PresenceTracker.GetConnectionsForUser(recipient.UserName);
                 if (connections is not null)
                 {
                     await _presenceHub.Clients.Clients(connections).SendAsync("NewMessageReceived", new

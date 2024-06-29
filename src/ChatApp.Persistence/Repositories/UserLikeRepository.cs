@@ -71,7 +71,6 @@ namespace ChatApp.Persistence.Repositories
             };
 
             await _dbContext.UserLikes.AddAsync(userLike);
-            await _dbContext.SaveChangesAsync();
 
             return true;
         }

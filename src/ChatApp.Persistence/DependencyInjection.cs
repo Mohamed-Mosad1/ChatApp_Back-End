@@ -43,7 +43,8 @@ namespace ChatApp.Persistence
             services.Configure<DataProtectionTokenProviderOptions>(opt => opt.TokenLifespan = TimeSpan.FromMinutes(15));
 
             // Configure memory cache
-            services.AddMemoryCache();
+            //services.AddMemoryCache();
+            services.AddSingleton(typeof(IResponseCacheService), typeof(ResponseCacheService));
 
             // Configure JWT authentication
             #region JWT authentication

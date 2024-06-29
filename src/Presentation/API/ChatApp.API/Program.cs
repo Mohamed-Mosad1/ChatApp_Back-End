@@ -6,6 +6,7 @@ using ChatApp.Persistence;
 using ChatApp.Persistence.DatabaseContext;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using StackExchange.Redis;
 
 namespace ChatApp.API
 {
@@ -31,10 +32,12 @@ namespace ChatApp.API
             {
                 options.EnableDetailedErrors = true;
             });
-            //    .AddJsonProtocol(options =>
-            //{
-            //    options.PayloadSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles;
-            //});
+
+            builder.Services.AddSingleton<IConnectionMultiplexer>((serviceProvider) =>
+            {
+                var connectionString = builder.Configuration.GetConnectionString("Redis");
+                return ConnectionMultiplexer.Connect(connectionString);
+            });
 
             // Enable Cors
             builder.Services.AddCors(opt =>
